@@ -65,7 +65,7 @@
                                 </tr>
                                 <tr>
                                     <th>Diskon</th>
-                                    <td>Rp {{ number_format($transaction->discount_amount, 0, ',', '.') }}</td>
+                                    <td>Rp {{ number_format($transaction->discount, 0, ',', '.') }}</td>
                                 </tr>
                                 <tr>
                                     <th>Total</th>

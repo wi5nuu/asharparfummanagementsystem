@@ -8,6 +8,7 @@ use App\Models\Inventory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ProductController extends Controller
 {
@@ -210,5 +211,72 @@ class ProductController extends Controller
     public function printBarcode(Product $product)
     {
         return view('products.barcode', compact('product'));
+    }
+
+    /**
+     * Export daftar produk ke PDF.
+     */
+    public function exportPDF(Request $request)
+    {
+        $query = Product::with(['category', 'inventory'])->latest();
+        
+        if ($request->has('ids')) {
+            $ids = explode(',', $request->ids);
+            $query->whereIn('id', $ids);
+        }
+
+        $products = $query->get();
+        $pdf = Pdf::loadView('products.export-pdf', compact('products'));
+        
+        return $pdf->download('daftar-produk-' . date('Y-m-d') . '.pdf');
+    }
+
+    /**
+     * Export daftar produk ke CSV.
+     */
+    public function exportCSV(Request $request)
+    {
+        $filename = 'daftar-produk-' . date('Y-m-d') . '.csv';
+        $query = Product::with(['category', 'inventory'])->latest();
+
+        if ($request->has('ids')) {
+            $ids = explode(',', $request->ids);
+            $query->whereIn('id', $ids);
+        }
+
+        $products = $query->get();
+
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$filename",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $columns = ['Kode Internal', 'Barcode', 'Nama Produk', 'Kategori', 'Ukuran', 'Stok', 'Harga Beli', 'Harga Jual', 'Harga Grosir'];
+
+        $callback = function() use($products, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            foreach ($products as $product) {
+                fputcsv($file, [
+                    $product->internal_id,
+                    $product->barcode,
+                    $product->name,
+                    $product->category->name ?? '-',
+                    $product->size . ' ' . $product->unit,
+                    $product->inventory->current_stock ?? 0,
+                    $product->purchase_price,
+                    $product->selling_price,
+                    $product->wholesale_price,
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

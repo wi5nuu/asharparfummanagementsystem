@@ -28,7 +28,12 @@ class CustomerController extends Controller
         // Set default is_active jika tidak ada
         $validated['is_active'] = $validated['is_active'] ?? true;
 
-        Customer::create($validated);
+        $customer = Customer::create($validated);
+
+        if (request()->expectsJson()) {
+            return response()->json($customer);
+        }
+
         return redirect()->route('customers.index')->with('success', 'Pelanggan berhasil ditambahkan');
     }
 

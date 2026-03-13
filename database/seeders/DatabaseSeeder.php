@@ -29,27 +29,27 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // Create admin user if not exists
-        if (!User::where('email', 'admin@apms.local')->exists()) {
-            User::create([
+        // Create admin user or update if exists
+        User::updateOrCreate(
+            ['role' => 'admin'], // Match by role to update the existing admin
+            [
                 'name' => 'Admin APMS',
-                'email' => 'admin@apms.local',
+                'email' => 'wisnualfian117@gmail.com',
                 'phone' => '08123456789',
-                'password' => bcrypt('password'),
-                'role' => 'admin',
-            ]);
-        }
+                'password' => bcrypt('wisnualfian117!120825'),
+            ]
+        );
 
-        // Create cashier user if not exists
-        if (!User::where('email', 'cashier@apms.local')->exists()) {
-            User::create([
+        // Create cashier user or update if exists
+        User::updateOrCreate(
+            ['role' => 'cashier'],
+            [
                 'name' => 'Cashier User',
                 'email' => 'cashier@apms.local',
                 'phone' => '08198765432',
-                'password' => bcrypt('password'),
-                'role' => 'cashier',
-            ]);
-        }
+                'password' => bcrypt('cashier!120825'),
+            ]
+        );
 
         // Create sample customers if not exist
         if (!\App\Models\Customer::where('customer_code', 'CUST001')->exists()) {

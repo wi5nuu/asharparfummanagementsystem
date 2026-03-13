@@ -18,9 +18,8 @@
                                 <i class="fas fa-download"></i> Export
                             </button>
                             <div class="dropdown-menu">
-                                <a class="dropdown-item" href="#">PDF</a>
-                                <a class="dropdown-item" href="#">Excel</a>
-                                <a class="dropdown-item" href="#">CSV</a>
+                                <a class="dropdown-item" href="{{ route('products.export.pdf') }}"><i class="fas fa-file-pdf mr-2"></i>PDF</a>
+                                <a class="dropdown-item" href="{{ route('products.export.csv') }}"><i class="fas fa-file-csv mr-2"></i>Excel / CSV</a>
                             </div>
                         </div>
                     </div>
@@ -309,7 +308,7 @@ function bulkAction(action) {
             // AJAX deactivate
             break;
         case 'export':
-            window.open(`/products/export?ids=${ids.join(',')}`, '_blank');
+            window.location.href = `{{ route('products.export.csv') }}?ids=${ids.join(',')}`;
             break;
     }
 }

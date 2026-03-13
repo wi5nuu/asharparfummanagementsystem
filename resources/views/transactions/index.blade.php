@@ -10,9 +10,11 @@
                 <div class="card-header">
                     <h3 class="card-title">Daftar Transaksi</h3>
                     <div class="card-tools">
-                        <div class="input-group input-group-sm" style="width: 250px;">
-                            <input type="text" id="dateRange" class="form-control float-right" placeholder="Filter tanggal">
-                            <div class="input-group-append">
+                        <div class="input-group input-group-sm" style="width: 280px;">
+                            <input type="text" id="dateRange" class="form-control float-right" 
+                                   placeholder="Filter tanggal" 
+                                   value="{{ request('start_date') ? request('start_date') . ' - ' . request('end_date') : '' }}">
+                            <div class="input-group-append" style="cursor: pointer" onclick="$('#dateRange').click()">
                                 <button class="btn btn-default">
                                     <i class="fas fa-calendar"></i>
                                 </button>
@@ -23,18 +25,18 @@
                 <div class="card-body">
                     <div class="row mb-3">
                         <div class="col-md-3">
-                            <select id="paymentFilter" class="form-control">
+                            <select id="paymentFilter" name="payment_method" class="form-control" onchange="filterTransactions()">
                                 <option value="">Semua Pembayaran</option>
-                                <option value="cash">Cash</option>
-                                <option value="qris">QRIS</option>
-                                <option value="transfer">Transfer</option>
+                                <option value="cash" {{ request('payment_method') == 'cash' ? 'selected' : '' }}>Cash</option>
+                                <option value="qris" {{ request('payment_method') == 'qris' ? 'selected' : '' }}>QRIS</option>
+                                <option value="transfer" {{ request('payment_method') == 'transfer' ? 'selected' : '' }}>Transfer</option>
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <select id="customerFilter" class="form-control">
+                            <select id="customerFilter" name="customer_type" class="form-control" onchange="filterTransactions()">
                                 <option value="">Semua Pelanggan</option>
-                                <option value="retail">Retail</option>
-                                <option value="wholesale">Wholesale</option>
+                                <option value="retail" {{ request('customer_type') == 'retail' ? 'selected' : '' }}>Retail</option>
+                                <option value="wholesale" {{ request('customer_type') == 'wholesale' ? 'selected' : '' }}>Wholesale</option>
                             </select>
                         </div>
                     </div>
@@ -86,12 +88,12 @@
                                                 <i class="fas fa-print"></i>
                                             </a>
                                             @can('manage_transactions')
-                                            <form action="{{ route('transactions.destroy', $transaction->id) }}" 
+                                            <form id="delete-form-{{ $transaction->id }}" action="{{ route('transactions.destroy', $transaction->id) }}" 
                                                   method="POST" class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm" 
-                                                        onclick="return confirm('Hapus transaksi ini?')">
+                                                <button type="button" class="btn btn-danger btn-sm" 
+                                                        onclick="confirmDelete({{ $transaction->id }})">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
@@ -125,31 +127,69 @@
 $(function() {
     // Date range picker
     $('#dateRange').daterangepicker({
+        autoUpdateInput: false,
         locale: {
-            format: 'YYYY-MM-DD'
+            format: 'YYYY-MM-DD',
+            cancelLabel: 'Clear',
+            applyLabel: 'Pilih',
+            customRangeLabel: 'Pilih Sendiri',
+            daysOfWeek: ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'],
+            monthNames: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
+        },
+        ranges: {
+           'Hari Ini': [moment(), moment()],
+           'Kemarin': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+           '7 Hari Terakhir': [moment().subtract(6, 'days'), moment()],
+           '30 Hari Terakhir': [moment().subtract(29, 'days'), moment()],
+           'Bulan Ini': [moment().startOf('month'), moment().endOf('month')],
+           'Bulan Lalu': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
         }
     });
+
+    $('#dateRange').on('apply.daterangepicker', function(ev, picker) {
+        $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+        filterTransactions();
+    });
+
+    $('#dateRange').on('cancel.daterangepicker', function(ev, picker) {
+        $(this).val('');
+        filterTransactions();
+    });
     
-    // Filter by payment method
-    $('#paymentFilter').change(function() {
-        const value = $(this).val().toLowerCase();
-        $('#transactionsTable tbody tr').filter(function() {
-            $(this).toggle(value === '' || $(this).find('td:eq(5)').text().toLowerCase().indexOf(value) > -1);
+    window.filterTransactions = function() {
+        const payment = $('#paymentFilter').val();
+        const customer = $('#customerFilter').val();
+        const dateRange = $('#dateRange').val();
+        
+        let url = `{{ route('transactions.index') }}?`;
+        if (payment) url += `payment_method=${payment}&`;
+        if (customer) url += `customer_type=${customer}&`;
+        
+        if (dateRange && dateRange.includes(' - ')) {
+            const dates = dateRange.split(' - ');
+            url += `start_date=${dates[0]}&end_date=${dates[1]}&`;
+        }
+        
+        window.location.href = url;
+    }
+
+    window.confirmDelete = function(id) {
+        Swal.fire({
+            title: 'Hapus Transaksi?',
+            text: "Tindakan ini akan mengembalikan stok dan mencabut poin pelanggan.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal',
+            position: 'center'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('delete-form-' + id).submit();
+            }
         });
-    });
-    
-    // Filter by customer type
-    $('#customerFilter').change(function() {
-        const value = $(this).val();
-        if (value === '') {
-            $('#transactionsTable tbody tr').show();
-        } else {
-            $('#transactionsTable tbody tr').each(function() {
-                const type = $(this).find('td:eq(3)').text().toLowerCase();
-                $(this).toggle(type.indexOf(value) > -1);
-            });
-        }
-    });
+    }
 });
 </script>
 @endpush

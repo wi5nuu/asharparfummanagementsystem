@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Customer;
 use App\Models\Inventory;
 use App\Models\Expense;
+use App\Models\TransactionDetail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -29,15 +30,23 @@ class DashboardController extends Controller
         $totalCustomers = Customer::count();
         
         // 2. Logika Stok
-        $lowStockProducts = DB::table('inventories')
+        $lowStockProductsCount = DB::table('inventories')
             ->whereColumn('current_stock', '<=', 'minimum_stock')
             ->count() ?? 0;
         
-        $outOfStockProducts = DB::table('inventories')
+        $outOfStockProductsCount = DB::table('inventories')
             ->where('current_stock', '<=', 0)
             ->count() ?? 0;
         
-        $lowStockAlerts = collect();
+        // Detailed alerts for dashboard display
+        $lowStockAlerts = DB::table('inventories')
+            ->join('products', 'inventories.product_id', '=', 'products.id')
+            ->select('products.name', 'inventories.current_stock', 'inventories.minimum_stock')
+            ->whereColumn('inventories.current_stock', '<=', 'inventories.minimum_stock')
+            ->orWhere('inventories.current_stock', '<', 5)
+            ->take(5)
+            ->get();
+            
         $expiringAlerts = collect();
         
         // 3. Transaksi Terbaru
@@ -46,12 +55,20 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
         
-        // 4. Pengeluaran & Profit
-        $monthExpenses = Expense::whereMonth('created_at', $month)
-            ->whereYear('created_at', $year)
+        // 4. Pengeluaran & Profit RIIL
+        $monthExpenses = Expense::whereMonth('date', $month)
+            ->whereYear('date', $year)
             ->sum('amount') ?? 0;
         
-        $profit = $monthSales - $monthExpenses;
+        // Calculate COGS (HPP) for the month
+        $monthCOGS = TransactionDetail::join('transactions', 'transaction_details.transaction_id', '=', 'transactions.id')
+            ->whereMonth('transactions.created_at', $month)
+            ->whereYear('transactions.created_at', $year)
+            ->select(DB::raw('SUM(transaction_details.purchase_price * transaction_details.quantity) as total_cogs'))
+            ->first()->total_cogs ?? 0;
+            
+        $grossProfit = $monthSales - $monthCOGS;
+        $profit = $grossProfit - $monthExpenses; // Net Profit
         
         // 5. Data Grafik (Optimized to single query)
         $salesData = cache()->remember('dashboard_sales_data.' . $year, 3600, function() use ($year) {
@@ -71,14 +88,55 @@ class DashboardController extends Controller
                 ->get();
         });
 
+        // 7. Active Shift
+        $activeShift = \App\Models\Shift::where('user_id', auth()->id())
+            ->where('status', 'open')
+            ->first();
+            
         return view('dashboard.index', compact(
-            'todaySales', 'monthSales', 'totalProducts', 'lowStockProducts',
-            'outOfStockProducts', 'totalCustomers', 'recentTransactions',
+            'todaySales', 'monthSales', 'totalProducts', 'lowStockProductsCount',
+            'outOfStockProductsCount', 'totalCustomers', 'recentTransactions',
             'topProducts', 'monthExpenses', 'profit', 'salesData',
-            'lowStockAlerts', 'expiringAlerts'
+            'lowStockAlerts', 'expiringAlerts', 'monthCOGS', 'grossProfit',
+            'activeShift'
         ));
     }
     
+    public function getStats()
+    {
+        $todaySales = Transaction::whereDate('created_at', Carbon::today())->sum('total_amount');
+        $monthSales = Transaction::whereMonth('created_at', Carbon::now()->month)
+            ->whereYear('created_at', Carbon::now()->year)
+            ->sum('total_amount');
+        
+        $monthExpenses = Expense::whereMonth('date', Carbon::now()->month)
+            ->whereYear('date', Carbon::now()->year)
+            ->sum('amount') ?? 0;
+            
+        $monthCOGS = TransactionDetail::join('transactions', 'transaction_details.transaction_id', '=', 'transactions.id')
+            ->whereMonth('transactions.created_at', Carbon::now()->month)
+            ->whereYear('transactions.created_at', Carbon::now()->year)
+            ->select(DB::raw('SUM(transaction_details.purchase_price * transaction_details.quantity) as total_cogs'))
+            ->first()->total_cogs ?? 0;
+            
+        $netProfit = $monthSales - $monthCOGS - $monthExpenses;
+        
+        $lowStockCount = DB::table('inventories')
+            ->whereColumn('current_stock', '<=', 'minimum_stock')
+            ->orWhere('current_stock', '<', 5)
+            ->count();
+            
+        $totalCustomers = Customer::count();
+
+        return response()->json([
+            'todaySales' => 'Rp ' . number_format($todaySales, 0, ',', '.'),
+            'monthSales' => 'Rp ' . number_format($monthSales, 0, ',', '.'),
+            'netProfit' => 'Rp ' . number_format($netProfit, 0, ',', '.'),
+            'lowStockCount' => $lowStockCount,
+            'totalCustomers' => $totalCustomers
+        ]);
+    }
+
     private function getMonthlySalesData($year)
     {
         $monthlySales = Transaction::select(

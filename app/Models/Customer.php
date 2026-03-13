@@ -14,7 +14,21 @@ class Customer extends Model
         'type',
         'address',
         'is_active',
+        'aroma_preferences',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($customer) {
+            if (empty($customer->customer_code)) {
+                $latestCustomer = static::latest('id')->first();
+                $nextId = $latestCustomer ? $latestCustomer->id + 1 : 1;
+                $customer->customer_code = 'CUST-' . str_pad($nextId, 6, '0', STR_PAD_LEFT);
+            }
+        });
+    }
 
     public function transactions()
     {

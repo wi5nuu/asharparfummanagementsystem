@@ -9,6 +9,11 @@
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     
+    <!-- PWA -->
+    <meta name="theme-color" content="#FF6B35">
+    <link rel="manifest" href="{{ asset('site.webmanifest') }}">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+    
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
@@ -32,6 +37,7 @@
         html, body {
             max-width: 100vw;
             overflow-x: hidden;
+            position: relative;
         }
         
         body {
@@ -51,21 +57,51 @@
         .navbar-apms {
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
             border: none;
-            color: white !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
-        .navbar-apms .nav-link, .navbar-apms .navbar-brand {
-            color: white !important;
+        .navbar-apms .nav-link, 
+        .navbar-apms .navbar-brand {
+            color: rgba(255, 255, 255, 0.95) !important;
+            transition: all 0.2s ease;
+            font-weight: 500;
         }
         
-        .navbar-apms .nav-link:hover, .navbar-apms .nav-link:focus {
-            color: rgba(255,255,255,0.8) !important;
-            background-color: rgba(0,0,0,0.05);
+        .navbar-apms .nav-link:hover {
+            color: #fff !important;
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+        }
+
+        .navbar-apms .nav-link:focus,
+        .navbar-apms .nav-link:active {
+            color: #fff !important;
+            background-color: rgba(0, 0, 0, 0.1) !important;
+            border-radius: 6px;
+        }
+        
+        .navbar-apms .dropdown-menu {
+            border: none;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+            border-radius: 10px;
+            padding: 8px;
+            margin-top: 10px;
+        }
+
+        .navbar-apms .dropdown-item {
+            border-radius: 6px;
+            padding: 8px 16px;
+            color: var(--dark-color);
+            transition: all 0.2s ease;
         }
         
         .navbar-apms .dropdown-item:hover {
-            background-color: var(--primary-color);
-            color: white !important;
+            background-color: #fff5f2;
+            color: var(--primary-color) !important;
+        }
+        
+        .navbar-apms .dropdown-item i {
+            color: var(--primary-color);
         }
         
         .sidebar-apms {
@@ -74,21 +110,37 @@
         }
         
         .sidebar-apms .nav-link {
-            color: var(--dark-color);
-            padding: 12px 20px;
-            margin: 2px 0;
+            color: #4a5568 !important;
+            padding: 10px 15px;
+            margin: 4px 8px;
             border-radius: 8px;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .sidebar-apms .nav-link i {
+            color: #718096;
+            margin-right: 10px;
+            transition: all 0.2s ease;
         }
         
         .sidebar-apms .nav-link:hover {
-            background-color: var(--primary-color);
-            color: white !important;
+            background-color: #fff5f2;
+            color: var(--primary-color) !important;
+        }
+
+        .sidebar-apms .nav-link:hover i {
+            color: var(--primary-color);
         }
         
         .sidebar-apms .nav-link.active {
-            background-color: var(--primary-color);
-            color: white;
+            background-color: var(--primary-color) !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        }
+
+        .sidebar-apms .nav-link.active i {
+            color: white !important;
         }
         
         .card-apms {
@@ -339,7 +391,7 @@
         }
     </style>
 </head>
-<body class="hold-transition sidebar-mini">
+<body class="hold-transition sidebar-mini layout-navbar-fixed layout-fixed">
 <div class="wrapper">
     <!-- Navbar -->
     <nav class="main-header navbar navbar-expand navbar-apms">
@@ -382,7 +434,7 @@
     </nav>
 
     <!-- Sidebar -->
-    <aside class="main-sidebar sidebar-dark-primary elevation-4 sidebar-apms">
+    <aside class="main-sidebar sidebar-light-primary elevation-4 sidebar-apms">
         <!-- Brand Logo -->
         <a href="{{ route('dashboard') }}" class="brand-link text-center">
             <span class="brand-text font-weight-bold" style="color: var(--primary-color); font-size: 1.5rem;">
@@ -441,6 +493,42 @@
                         <a href="{{ route('customers.index') }}" class="nav-link {{ request()->routeIs('customers.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-users"></i>
                             <p>Pelanggan</p>
+                        </a>
+                    </li>
+                    @endcan
+
+                    @can('manage_expenses')
+                    <li class="nav-item">
+                        <a href="{{ route('expenses.index') }}" class="nav-link {{ request()->routeIs('expenses.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-file-invoice-dollar"></i>
+                            <p>Pengeluaran</p>
+                        </a>
+                    </li>
+                    @endcan
+
+                    @can('manage_inventory')
+                    <li class="nav-item">
+                        <a href="{{ route('stock_audits.index') }}" class="nav-link {{ request()->routeIs('stock_audits.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-clipboard-check"></i>
+                            <p>Audit Stok</p>
+                        </a>
+                    </li>
+                    @endcan
+
+                    @can('manage_transactions')
+                    <li class="nav-item">
+                        <a href="{{ route('shifts.index') }}" class="nav-link {{ request()->routeIs('shifts.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-id-badge"></i>
+                            <p>Shift & Closing Kasir</p>
+                        </a>
+                    </li>
+                    @endcan
+
+                    @can('manage_transactions')
+                    <li class="nav-item">
+                        <a href="{{ route('debts.index') }}" class="nav-link {{ request()->routeIs('debts.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-hand-holding-usd"></i>
+                            <p>Manajemen Kas Bon</p>
                         </a>
                     </li>
                     @endcan
@@ -516,5 +604,12 @@
 <script src="https://cdn.jsdelivr.net/npm/dropzone@5.9.3/dist/min/dropzone.min.js"></script>
 
 @stack('scripts')
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js');
+        });
+    }
+</script>
 </body>
 </html>

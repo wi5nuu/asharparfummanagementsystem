@@ -17,6 +17,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
 
     // Products
+    Route::get('/products/export/pdf', [ProductController::class, 'exportPDF'])->name('products.export.pdf');
+    Route::get('/products/export/csv', [ProductController::class, 'exportCSV'])->name('products.export.csv');
     Route::resource('products', ProductController::class);
     Route::get('/products/{product}/barcode', [ProductController::class, 'printBarcode'])->name('products.barcode');
     
@@ -25,6 +27,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
     Route::resource('transactions', TransactionController::class)->except(['create', 'store']);
     Route::get('/transactions/{transaction}/print', [TransactionController::class, 'printInvoice'])->name('transactions.print');
+    Route::get('/transactions/{transaction}/receipt', [TransactionController::class, 'printInvoice'])->name('transactions.receipt');
     Route::get('/api/products/{id}', [TransactionController::class, 'getProductInfo']);
     
     // Inventory
@@ -57,6 +60,23 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings/backup', [SettingController::class, 'backup'])->name('settings.backup');
     Route::post('/settings/restore', [SettingController::class, 'restore'])->name('settings.restore');
+
+    // Expenses (Pengeluaran)
+    Route::resource('expenses', \App\Http\Controllers\ExpenseController::class);
+
+    // Stock Audits (Audit Stok Mendadak)
+    Route::resource('stock_audits', \App\Http\Controllers\StockAuditController::class);
+    Route::post('stock_audits/{stock_audit}/update-items', [\App\Http\Controllers\StockAuditController::class, 'updateItems'])->name('stock_audits.update-items');
+
+    // Shift Management (Closing Kasir)
+    Route::resource('shifts', \App\Http\Controllers\ShiftController::class);
+
+    // Debt Management (Kas Bon)
+    Route::get('debts', [\App\Http\Controllers\DebtController::class, 'index'])->name('debts.index');
+    Route::post('debts/{transaction}/payment', [\App\Http\Controllers\DebtController::class, 'storePayment'])->name('debts.payment');
+
+    // POS Helper Routes
+    Route::get('transactions/customer-info/{id}', [\App\Http\Controllers\TransactionController::class, 'getCustomerInfo'])->name('transactions.customer-info');
 });
 
 // API Routes

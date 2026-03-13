@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Pagination\Paginator;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +20,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Paginator::useBootstrapFour();
+
         // Define gates for different user roles
         \Illuminate\Support\Facades\Gate::define('manage_products', function ($user) {
             return in_array($user->role, ['admin', 'manager']);
@@ -37,6 +40,10 @@ class AppServiceProvider extends ServiceProvider
         });
 
         \Illuminate\Support\Facades\Gate::define('manage_coupons', function ($user) {
+            return in_array($user->role, ['admin', 'manager']);
+        });
+
+        \Illuminate\Support\Facades\Gate::define('manage_expenses', function ($user) {
             return in_array($user->role, ['admin', 'manager']);
         });
 

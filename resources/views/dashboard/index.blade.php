@@ -4,6 +4,47 @@
 
 @section('content')
 <div class="container-fluid">
+    <!-- Active Shift Alert -->
+    <div class="row">
+        <div class="col-12">
+            @if($activeShift)
+            <div class="alert alert-success alert-dismissible card-apms border-left-success">
+                <div class="d-flex align-items-center">
+                    <div class="mr-3">
+                        <i class="fas fa-cash-register fa-2x"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0 font-weight-bold">Shift Aktif: Sedang Berjalan</h5>
+                        <p class="mb-0">Dimulai pada {{ $activeShift->start_time->format('d M Y H:i') }} | Modal Awal: Rp {{ number_format($activeShift->initial_cash, 0, ',', '.') }}</p>
+                    </div>
+                    <div class="ml-auto">
+                        <a href="{{ route('shifts.index') }}" class="btn btn-light font-weight-bold">
+                            <i class="fas fa-times-circle mr-1"></i> Tutup Shift
+                        </a>
+                    </div>
+                </div>
+            </div>
+            @else
+            <div class="alert alert-warning alert-dismissible card-apms border-left-warning">
+                <div class="d-flex align-items-center">
+                    <div class="mr-3">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0 font-weight-bold">Shift Belum Dibuka!</h5>
+                        <p class="mb-0">Anda harus membuka shift kasir terlebih dahulu untuk dapat melakukan transaksi di POS.</p>
+                    </div>
+                    <div class="ml-auto">
+                        <a href="{{ route('shifts.index') }}" class="btn btn-primary-apms font-weight-bold">
+                            <i class="fas fa-play-circle mr-1"></i> Buka Shift Sekarang
+                        </a>
+                    </div>
+                </div>
+            </div>
+            @endif
+        </div>
+    </div>
+
     <!-- Quick Stats Row -->
     <div class="row">
         <div class="col-12 col-sm-6 col-md-3">
@@ -37,19 +78,19 @@
                 </span>
                 <div class="info-box-content">
                     <span class="info-box-text">Stok Rendah</span>
-                    <span class="info-box-number">{{ $lowStockProducts }} Produk</span>
+                    <span class="info-box-number">{{ $lowStockProductsCount }} Produk</span>
                 </div>
             </div>
         </div>
         
         <div class="col-12 col-sm-6 col-md-3">
             <div class="info-box mb-3 card-apms">
-                <span class="info-box-icon bg-danger elevation-1">
-                    <i class="fas fa-users"></i>
+                <span class="info-box-icon bg-info elevation-1">
+                    <i class="fas fa-wallet"></i>
                 </span>
                 <div class="info-box-content">
-                    <span class="info-box-text">Total Pelanggan</span>
-                    <span class="info-box-number">{{ $totalCustomers }}</span>
+                    <span class="info-box-text">Laba Bersih (Bulan Ini)</span>
+                    <span class="info-box-number">Rp {{ number_format($profit, 0, ',', '.') }}</span>
                 </div>
             </div>
         </div>
@@ -138,22 +179,27 @@
                 </div>
                 <div class="card-body p-0">
                     <ul class="products-list product-list-in-card pl-2 pr-2">
-                        @foreach($lowStockAlerts as $alert)
+                        @forelse($lowStockAlerts as $alert)
                         <li class="item">
-                            <div class="product-img">
-                                <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+                            <div class="product-img text-center">
+                                <i class="fas fa-exclamation-triangle text-warning"></i>
                             </div>
                             <div class="product-info">
-                                <a href="javascript:void(0)" class="product-title">
-                                    {{ $alert->product->name }}
+                                <a href="{{ route('inventory.index') }}" class="product-title">
+                                    {{ $alert->name }}
                                     <span class="badge badge-warning float-right">{{ $alert->current_stock }} stok</span>
                                 </a>
                                 <span class="product-description">
-                                    Minimum: {{ $alert->minimum_stock }}
+                                    Segera lakukan pengisian (Min: {{ $alert->minimum_stock }})
                                 </span>
                             </div>
                         </li>
-                        @endforeach
+                        @empty
+                        <li class="item text-center py-3">
+                            <i class="fas fa-check-circle text-success fa-2x mb-2"></i>
+                            <p class="text-muted">Semua stok terpantau aman.</p>
+                        </li>
+                        @endforelse
                         
                         @foreach($expiringAlerts as $alert)
                         <li class="item">
@@ -349,6 +395,26 @@ $(function() {
         data: salesChartData,
         options: salesChartOptions
     });
+    
+    // Auto-Pulse: Refresh stats every 30 seconds
+    function refreshStats() {
+        $.ajax({
+            url: '/api/dashboard/stats',
+            method: 'GET',
+            success: function(response) {
+                $('.info-box-number:eq(0)').text(response.todaySales);
+                $('.info-box-number:eq(1)').text(response.monthSales);
+                $('.info-box-number:eq(2)').text(response.lowStockCount + ' Produk');
+                $('.info-box-number:eq(3)').text(response.netProfit);
+            },
+            error: function(err) {
+                console.error('Auto-Pulse error:', err);
+            }
+        });
+    }
+    
+    // Initial call after 30s, then repeat
+    setInterval(refreshStats, 30000);
     
     // Payment Method Chart
     var paymentChartCanvas = $('#paymentChart').get(0).getContext('2d');

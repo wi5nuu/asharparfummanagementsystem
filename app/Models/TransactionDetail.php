@@ -10,8 +10,10 @@ class TransactionDetail extends Model
         'transaction_id',
         'product_id',
         'quantity',
+        'size',
         'price',
         'subtotal',
+        'purchase_price',
         'bonus_quantity',
         'bonus_note',
     ];
@@ -20,6 +22,7 @@ class TransactionDetail extends Model
         'quantity'       => 'integer',
         'bonus_quantity' => 'integer',
         'unit_price'     => 'decimal:2',
+        'purchase_price' => 'decimal:2',
         'subtotal'       => 'decimal:2',
     ];
 

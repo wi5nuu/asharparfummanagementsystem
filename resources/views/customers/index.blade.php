@@ -236,7 +236,11 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label>Catatan</label>
+                                <label>Catatan / Selera Aroma</label>
+                                <textarea class="form-control" name="aroma_preferences" rows="2" placeholder="Contoh: Suka aroma manis, Baccarat, atau tidak suka aroma kayu"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Catatan Internal</label>
                                 <textarea class="form-control" name="notes" rows="2"></textarea>
                             </div>
                         </div>

@@ -66,6 +66,16 @@
                         </div>
 
                         <div class="form-group">
+                            <label for="aroma_preferences">Catatan / Selera Aroma</label>
+                            <textarea class="form-control @error('aroma_preferences') is-invalid @enderror" 
+                                      id="aroma_preferences" name="aroma_preferences" rows="2" 
+                                      placeholder="Contoh: Suka aroma manis, Baccarat, dll">{{ old('aroma_preferences', $customer->aroma_preferences) }}</textarea>
+                            @error('aroma_preferences')
+                            <span class="invalid-feedback">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
                             <label for="is_active">Status</label>
                             <div class="custom-control custom-switch">
                                 <input type="checkbox" class="custom-control-input" id="is_active" name="is_active" 

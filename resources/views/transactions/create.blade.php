@@ -48,11 +48,11 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-body">
-                    <div class="row" id="productGrid">
+                <div class="card-body p-2 m-0 product-grid-container" style="max-height: 65vh; overflow-y: auto;">
+                    <div class="row m-0" id="productGrid">
                         @foreach($products as $product)
                         @php
-                            $inventory = $product->inventories->first();
+                            $inventory = $product->inventory;
                             $currentStock = $inventory ? $inventory->current_stock : 0;
                             $disabled = $currentStock == 0;
                         @endphp
@@ -65,6 +65,7 @@
                              data-stock="{{ $currentStock }}"
                              data-barcode="{{ $product->barcode }}">
                             <div class="card product-card {{ $disabled ? 'bg-light' : '' }}"
+                                 style="user-select: none; cursor: pointer;"
                                  onclick="{{ !$disabled ? 'addToCart(' . $product->id . ')' : '' }}">
                                 <div class="card-body text-center p-2">
                                     @if($product->image)
@@ -131,7 +132,8 @@
                                     @foreach($customers as $customer)
                                     <option value="{{ $customer->id }}" 
                                             data-phone="{{ $customer->phone }}"
-                                            data-email="{{ $customer->email }}">
+                                            data-email="{{ $customer->email }}"
+                                            data-points="{{ $customer->points }}">
                                         {{ $customer->name }}
                                     </option>
                                     @endforeach
@@ -143,9 +145,14 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="alert alert-info p-2">
-                                    <small>
-                                        <i class="fas fa-phone"></i> <span id="customerPhone"></span><br>
-                                        <i class="fas fa-envelope"></i> <span id="customerEmail"></span>
+                                    <small id="customerInfoAlert">
+                                        <i class="fas fa-phone mr-1"></i> <span id="customerPhone"></span><br>
+                                        <i class="fas fa-envelope mr-1"></i> <span id="customerEmail"></span><br>
+                                        <i class="fas fa-star text-warning mr-1"></i> Poin Member: <strong id="customerPoints">0</strong>
+                                        <div id="aromaPrefContainer" style="display:none;" class="mt-1 pt-1 border-top">
+                                            <i class="fas fa-magic text-purple mr-1"></i> <strong>Selera Aroma:</strong><br>
+                                            <span id="customerAroma" class="text-dark italic"></span>
+                                        </div>
                                     </small>
                                 </div>
                             </div>
@@ -173,15 +180,14 @@
                     <div class="table-responsive">
                         <table class="table table-sm mb-0" id="cartTable">
                             <thead>
-                            <tr>
-                                <th width="5%">#</th>
-                                <th>Produk</th>
-                                <th width="15%">Qty</th>
-                                <th width="20%">Harga</th>
-                                <th width="10%">Bonus</th>
-                                <th width="5%"></th>
-                            </tr>
-                        </thead>
+                                <tr>
+                                    <th width="5%">#</th>
+                                    <th>Produk & Ukuran</th>
+                                    <th width="20%">Qty</th>
+                                    <th width="25%">Harga</th>
+                                    <th width="5%"></th>
+                                </tr>
+                            </thead>
                             <tbody id="cartItems">
                                 <!-- Cart items will be added here -->
                             </tbody>
@@ -204,6 +210,12 @@
                             <span id="subtotal">Rp 0</span>
                         </div>
                     </div>
+
+                    <div class="mb-2">
+                        <button type="button" class="btn btn-outline-success btn-xs btn-block" onclick="openBonusModal(1, true)">
+                            <i class="fas fa-plus"></i> Tambah Bonus Manual (20ml)
+                        </button>
+                    </div>
                     
                     <div class="row mb-2">
                         <div class="col-6">
@@ -216,7 +228,7 @@
                                 <div class="input-group-append">
                                     <select class="form-control form-control-sm" id="discountType" 
                                             style="width: 70px;">
-                                        <option value="amount">Rp</option>
+                                        <option value="fixed">Rp</option>
                                         <option value="percent">%</option>
                                     </select>
                                 </div>
@@ -243,19 +255,29 @@
                             <h4 id="totalAmount" class="text-primary">Rp 0</h4>
                         </div>
                     </div>
+
+                    <!-- Receipt Visibility -->
+                    <div class="form-group">
+                        <label><i class="fas fa-eye"></i> Tampilan Struk</label>
+                        <select id="receiptVisibility" class="form-control form-control-sm">
+                            <option value="public" selected>Pelanggan & Admin (Lengkap)</option>
+                            <option value="private">Admin Saja (Khusus Internal)</option>
+                        </select>
+                        <small class="text-muted">Tentukan apakah detail bonus muncul di struk pelanggan.</small>
+                    </div>
                     
                     <!-- Payment Method -->
                     <div class="form-group">
                         <label>Metode Pembayaran</label>
-                        <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+                        <div class="input-group btn-group-toggle w-100" data-toggle="buttons">
                             <label class="btn btn-outline-primary active">
-                                <input type="radio" name="payment_method" value="cash" checked> Cash
+                                <input type="radio" name="payment_method" value="cash" checked onchange="autoFillPayment()"> Cash
                             </label>
                             <label class="btn btn-outline-primary">
-                                <input type="radio" name="payment_method" value="qris"> QRIS
+                                <input type="radio" name="payment_method" value="qris" onchange="autoFillPayment()"> QRIS
                             </label>
                             <label class="btn btn-outline-primary">
-                                <input type="radio" name="payment_method" value="transfer"> Transfer
+                                <input type="radio" name="payment_method" value="transfer" onchange="autoFillPayment()"> Transfer
                             </label>
                         </div>
                     </div>
@@ -332,6 +354,13 @@
                         <input type="text" class="form-control" name="name" required>
                     </div>
                     <div class="form-group">
+                        <label>Tipe Pelanggan *</label>
+                        <select class="form-control" name="type" required>
+                            <option value="retail">Retail</option>
+                            <option value="wholesale">Wholesale</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label>Nomor Telepon</label>
                         <input type="text" class="form-control" name="phone">
                     </div>
@@ -349,6 +378,31 @@
                     <button type="submit" class="btn btn-primary-apms">Simpan</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Bonus aroma Modal -->
+<div class="modal fade" id="bonusAromaModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="fas fa-gift"></i> Pilih Aroma Bonus (Free 20ml)</h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info py-2" id="bonusInstruction">
+                    Silakan pilih aroma untuk bonus item. Sisa: <strong id="remainingBonus">0</strong>
+                </div>
+                <div class="input-group mb-3">
+                    <input type="text" id="bonusSearch" class="form-control" placeholder="Cari nama parfum...">
+                </div>
+                <div id="bonusProductList" class="row" style="max-height: 400px; overflow-y: auto;">
+                    <!-- Bonus items will be listed here -->
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -380,6 +434,9 @@
 .product-price {
     font-size: 0.9rem;
 }
+.product-img-mini {
+    flex-shrink: 0;
+}
 #cartTable tbody tr {
     border-bottom: 1px solid #dee2e6;
 }
@@ -396,11 +453,21 @@
 <script>
 let cart = [];
 let customerType = 'retail';
+const allProducts = @json($products);
+let bonusQueue = 0;
 
-$(function() {
+$(document).ready(function() {
+    // Setup AJAX CSRF
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+
     // Initialize Select2
-    $('#customerSelect').select2({
-        theme: 'bootstrap4'
+    $('#customerSelect, #receiptVisibility, #customerType, select[name="type"]').select2({
+        theme: 'bootstrap4',
+        width: '100%'
     });
     
     // Load cart from localStorage
@@ -443,16 +510,24 @@ $(function() {
     
     // Customer select change
     $('#customerSelect').change(function() {
-        const selected = $(this).find('option:selected');
-        const phone = selected.data('phone');
-        const email = selected.data('email');
-        
-        if (phone || email) {
-            $('#customerPhone').text(phone || '-');
-            $('#customerEmail').text(email || '-');
-            $('.customer-details').show();
+        const customerId = $(this).val();
+        if (customerId) {
+            $.get(`/transactions/customer-info/${customerId}`, function(data) {
+                $('#customerPhone').text(data.phone || '-');
+                $('#customerEmail').text(data.email || '-');
+                $('#customerPoints').text(data.points || 0);
+                
+                if (data.aroma_preferences) {
+                    $('#customerAroma').text(data.aroma_preferences);
+                    $('#aromaPrefContainer').show();
+                } else {
+                    $('#aromaPrefContainer').hide();
+                }
+                $('.customer-details').show();
+            });
         } else {
             $('.customer-details').hide();
+            $('#aromaPrefContainer').hide();
         }
     });
     
@@ -465,9 +540,11 @@ $(function() {
     $('#newCustomerForm').submit(function(e) {
         e.preventDefault();
         const formData = $(this).serialize();
+        const submitBtn = $(this).find('button[type="submit"]');
+        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Menyimpan...');
         
         $.ajax({
-            url: '/api/customers',
+            url: '/customers',
             method: 'POST',
             data: formData,
             success: function(response) {
@@ -479,6 +556,17 @@ $(function() {
                 $('#newCustomerForm')[0].reset();
                 
                 Swal.fire('Berhasil', 'Pelanggan berhasil ditambahkan', 'success');
+            },
+            error: function(xhr) {
+                let message = 'Terjadi kesalahan';
+                if (xhr.status === 422) {
+                    const errors = xhr.responseJSON.errors;
+                    message = Object.values(errors).flat().join('<br>');
+                }
+                Swal.fire('Gagal', message, 'error');
+            },
+            complete: function() {
+                submitBtn.prop('disabled', false).text('Simpan');
             }
         });
     });
@@ -497,7 +585,9 @@ $(function() {
             }
         }
     });
-});
+
+    $('#bonusSearch').on('input', renderBonusProducts);
+}); // end $(document).ready
 
 function scanBarcode(barcode) {
     const product = $('.product-item').filter(function() {
@@ -513,16 +603,19 @@ function scanBarcode(barcode) {
 }
 
 function addToCart(productId) {
-    const product = $(`.product-item[data-id="${productId}"]`);
-    const stock = parseInt(product.data('stock'));
+    const product = allProducts.find(p => p.id === productId);
+    const stock = product.inventory ? product.inventory.current_stock : 0;
     
     if (stock === 0) {
         Swal.fire('Stok Habis', 'Produk ini tidak tersedia', 'warning');
         return;
     }
     
+    const categoryId = parseInt(product.category_id);
+    const isPremium = categoryId === 1 || categoryId === 5;
+    
     // Check if already in cart
-    const existingIndex = cart.findIndex(item => item.id === productId);
+    const existingIndex = cart.findIndex(item => item.id === productId && item.size === '30ml');
     
     if (existingIndex >= 0) {
         if (cart[existingIndex].quantity >= stock) {
@@ -530,32 +623,97 @@ function addToCart(productId) {
             return;
         }
         cart[existingIndex].quantity++;
-        saveCart();
-        updateCartDisplay();
     } else {
-        const price = customerType === 'wholesale' 
-            ? parseFloat(product.data('wholesale')) || parseFloat(product.data('price'))
-            : parseFloat(product.data('price'));
-        
-        // Detect if Premium by category button or data
-        const categoryId = parseInt(product.data('category'));
-        const isPremium = categoryId === 1; // category_id 1 = Premium
+        const basePrice = customerType === 'wholesale' 
+            ? parseFloat(product.wholesale_price) || parseFloat(product.selling_price)
+            : parseFloat(product.selling_price);
         
         cart.push({
             id: productId,
-            name: product.data('name'),
-            price: price,
-            original_price: parseFloat(product.data('price')),
+            name: product.name,
+            price: basePrice,
+            base_price: basePrice,
             quantity: 1,
             stock: stock,
-            barcode: product.data('barcode'),
-            is_premium: isPremium,
-            bonus_quantity: 0,
+            size: '30ml',
+            is_premium: isPremium
         });
-        
-        saveCart();
-        updateCartDisplay();
     }
+
+    // Auto-add Bonus for Premium
+    if (isPremium) {
+        // Rules: 30ml -> 1, 50ml -> 2, 100ml -> 1
+        // Default size is 30ml
+        openBonusModal(1);
+    }
+    
+    saveCart();
+    updateCartDisplay();
+    autoFillPayment();
+}
+
+function openBonusModal(count, isManual = false) {
+    bonusQueue = count;
+    $('#remainingBonus').text(bonusQueue);
+    $('#bonusSearch').val('');
+    renderBonusProducts();
+    $('#bonusAromaModal').modal('show');
+}
+
+function renderBonusProducts() {
+    const searchTerm = $('#bonusSearch').val().toLowerCase();
+    const container = $('#bonusProductList');
+    container.empty();
+    
+    const filtered = allProducts.filter(p => p.name.toLowerCase().includes(searchTerm));
+    
+    filtered.slice(0, 24).forEach(product => {
+        container.append(`
+            <div class="col-md-4 mb-2">
+                <button class="btn btn-outline-success btn-sm btn-block text-left p-2" 
+                        onclick="addSelectedBonus(${product.id})">
+                    <div class="font-weight-bold" style="font-size: 0.75rem;">${product.name}</div>
+                    <small>20ml - Rp 0</small>
+                </button>
+            </div>
+        `);
+    });
+}
+
+function addSelectedBonus(productId) {
+    const product = allProducts.find(p => p.id === productId);
+    const bonusId = product.id; 
+    
+    // Check if bonus entry for this aroma already exists
+    const existingIndex = cart.findIndex(item => item.id === bonusId && item.is_bonus);
+    
+    if (existingIndex >= 0) {
+        cart[existingIndex].quantity++;
+    } else {
+        cart.push({
+            id: bonusId,
+            name: product.name + ' (Bonus 20ml)',
+            price: 0,
+            base_price: 0,
+            real_value: 43333,
+            quantity: 1,
+            stock: 999,
+            size: '20ml',
+            is_bonus: true
+        });
+    }
+    
+    bonusQueue--;
+    $('#remainingBonus').text(bonusQueue);
+    
+    if (bonusQueue <= 0) {
+        $('#bonusAromaModal').modal('hide');
+    }
+    
+    saveCart();
+    updateCartDisplay();
+    calculateTotals();
+    autoFillPayment();
 }
 
 function removeFromCart(index) {
@@ -577,7 +735,7 @@ function updateCartDisplay() {
     if (cart.length === 0) {
         cartItems.html(`
             <tr>
-                <td colspan="6" class="text-center text-muted py-3">
+                <td colspan="5" class="text-center text-muted py-3">
                     <i class="fas fa-shopping-cart fa-2x mb-2"></i><br>
                     Keranjang kosong
                 </td>
@@ -593,52 +751,49 @@ function updateCartDisplay() {
         const itemTotal = item.price * item.quantity;
         subtotal += itemTotal;
         const isPremium = item.is_premium || false;
-        const bonusQty = item.bonus_quantity || 0;
-        
-        const bonusCell = isPremium ? `
-            <td>
-                <div class="d-flex align-items-center">
-                    <span class="badge badge-success mr-1" title="Bonus 20ml Sedang">🎁</span>
-                    <input type="number" class="form-control form-control-sm text-center bonus-input" 
-                           style="width:55px;" min="0" max="99"
-                           value="${bonusQty}"
-                           onchange="updateBonus(${index}, this.value)"
-                           title="Jumlah bonus 20ml Sedang">
-                </div>
-            </td>
-        ` : `<td><span class="text-muted">-</span></td>`;
-        
         const row = `
             <tr class="${isPremium ? 'table-warning' : ''}">
                 <td>${index + 1}</td>
                 <td>
                     <div class="d-flex align-items-center">
-                        <div class="mr-2">
-                            <i class="fas fa-wine-bottle"></i>
+                        <div class="mr-1">
+                            <i class="fas ${item.is_bonus ? 'fa-gift text-success' : 'fa-wine-bottle'}"></i>
                         </div>
-                        <div>
-                            <small class="d-block font-weight-bold">${item.name}</small>
-                            ${isPremium ? '<span class="badge badge-warning" style="font-size:0.65rem;">⭐ Premium – Bonus 20ml</span>' : ''}
+                        <div class="flex-grow-1">
+                            <small class="d-block font-weight-bold" style="font-size: 0.85rem; line-height: 1.2;">${item.name}</small>
+                            ${item.is_bonus ? '<span class="badge badge-success mt-1" style="font-size:0.65rem;">BONUS WAJIB 20ML</span>' : `
+                            <div class="mt-1">
+                                <select class="form-control form-control-sm p-1" style="font-size: 0.75rem; height: 28px;" 
+                                        onchange="updateSize(${index}, this.value)">
+                                    <option value="30ml" ${item.size === '30ml' ? 'selected' : ''}>30ml</option>
+                                    <option value="50ml" ${item.size === '50ml' ? 'selected' : ''}>50ml</option>
+                                    <option value="100ml" ${item.size === '100ml' ? 'selected' : ''}>100ml</option>
+                                </select>
+                            </div>
+                            `}
                         </div>
                     </div>
                 </td>
                 <td>
-                    <div class="input-group input-group-sm">
-                        <button class="btn btn-outline-secondary" type="button" 
-                                onclick="updateQuantity(${index}, ${item.quantity - 1})">-</button>
-                        <input type="text" class="form-control text-center" 
-                               value="${item.quantity}" readonly style="width: 40px;">
-                        <button class="btn btn-outline-secondary" type="button" 
-                                onclick="updateQuantity(${index}, ${item.quantity + 1})">+</button>
+                    <div class="input-group input-group-sm flex-nowrap" style="width: 100px;">
+                        <div class="input-group-prepend">
+                            <button class="btn btn-outline-secondary" type="button" 
+                                    onclick="updateQuantity(${index}, ${item.quantity - 1})">-</button>
+                        </div>
+                        <input type="text" class="form-control text-center px-1" 
+                               value="${item.quantity}" readonly>
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="button" 
+                                    onclick="updateQuantity(${index}, ${item.quantity + 1})">+</button>
+                        </div>
                     </div>
                 </td>
                 <td>
                     <div class="text-right">
-                        <div>Rp ${item.price.toLocaleString('id-ID')}</div>
-                        <small class="text-muted">Total: Rp ${itemTotal.toLocaleString('id-ID')}</small>
+                        <div style="font-size: 0.9rem;">Rp ${item.price.toLocaleString('id-ID')}</div>
+                        <small class="text-muted" style="font-size: 0.75rem;">Total: Rp ${itemTotal.toLocaleString('id-ID')}</small>
                     </div>
                 </td>
-                ${bonusCell}
                 <td class="text-center">
                     <button type="button" class="btn btn-danger btn-sm" 
                             onclick="removeFromCart(${index})">
@@ -685,15 +840,15 @@ function calculateTotals() {
     const discountInput = $('#discount').val();
     const discountType = $('#discountType').val();
     
-    let discount = 0;
+    let discountValue = 0;
     if (discountType === 'percent') {
-        discount = subtotal * (parseFloat(discountInput) || 0) / 100;
+        discountValue = subtotal * (parseFloat(discountInput) || 0) / 100;
     } else {
-        discount = parseFloat(discountInput) || 0;
+        discountValue = parseFloat(discountInput) || 0;
     }
     
-    const tax = (subtotal - discount) * 0.1; // 10% PPN
-    const total = Math.max(0, subttotal - discount + tax);
+    const tax = Math.round((subtotal - discountValue) * 0.1); // 10% PPN
+    const total = Math.max(0, subtotal - discountValue + tax);
     
     $('#tax').text('Rp ' + tax.toLocaleString('id-ID'));
     $('#totalAmount').text('Rp ' + total.toLocaleString('id-ID'));
@@ -715,40 +870,133 @@ function setPaidAmount(amount) {
     $('#paidAmount').val(amount).trigger('input');
 }
 
+function updateSize(index, newSize) {
+    const item = cart[index];
+    const oldSize = item.size;
+    item.size = newSize;
+    
+    // Update price based on size (Image ratios: 1x, 2x, 4x)
+    // Refined based on user image:
+    // Premium: 63k -> 125k -> 250k
+    // Sedang: 50k -> 100k -> 200k
+    // Standar: 35k -> 70k -> 140k
+    if (newSize === '30ml') {
+        item.price = item.base_price;
+    } else if (newSize === '50ml') {
+        if (item.is_premium) {
+            item.price = 125000;
+        } else {
+            item.price = item.base_price * 2.0; 
+        }
+    } else if (newSize === '100ml') {
+        if (item.is_premium) {
+            item.price = 250000;
+        } else {
+            item.price = item.base_price * 4.0;
+        }
+    }
+    
+    // Scaling Bonus Rules: 30ml -> 1, 50ml -> 2, 100ml -> 1
+    if (item.is_premium) {
+        if (newSize === '50ml' && (oldSize === '30ml' || oldSize === '100ml')) {
+            openBonusModal(1); // Add 1 more if upgrading to 50ml or switching from 100ml
+        } else if (newSize === '30ml' && oldSize === '100ml') {
+            // Already had 1, still 1. No action needed or maybe confirm if they want another?
+            // Usually 100ml gives 1, 30ml gives 1.
+        }
+    }
+    
+    saveCart();
+    updateCartDisplay();
+    calculateTotals();
+    autoFillPayment();
+}
+
+function autoFillPayment() {
+    const totalText = $('#totalAmount').text().replace(/[^0-9]/g, '');
+    const total = Math.round(parseFloat(totalText) || 0);
+    
+    const paymentMethod = $('input[name="payment_method"]:checked').val();
+    
+    // Auto fill for cash/qris/transfer if currently empty or just updated total
+    $('#paidAmount').val(total).trigger('input');
+}
+
 function processPayment() {
     if (cart.length === 0) {
         Swal.fire('Keranjang Kosong', 'Tambahkan produk terlebih dahulu', 'warning');
         return;
     }
     
-    const total = parseFloat($('#totalAmount').text().replace(/[^0-9]/g, ''));
+    const total = Math.round(parseFloat($('#totalAmount').text().replace(/[^0-9]/g, '')) || 0);
     const paid = parseFloat($('#paidAmount').val()) || 0;
     
-    if (paid < total) {
-        Swal.fire('Pembayaran Kurang', 'Jumlah pembayaran kurang dari total', 'warning');
+    // Check if debt (with small tolerance for floats)
+    if (paid < total - 0.9) {
+        const customerId = $('#customerSelect').val();
+        if (!customerId) {
+            Swal.fire('Pelanggan Umum Tidak Bisa Hutang', 'Pilih pelanggan terdaftar untuk mencatat piutang / Kas Bon.', 'warning');
+            return;
+        }
+        
+        const debtAmount = total - paid;
+        const confirmMsg = paid > 0 
+            ? `Pembayaran kurang Rp ${debtAmount.toLocaleString('id-ID')}. Catat sebagai Cicilan/Hutang?`
+            : `Total Rp ${total.toLocaleString('id-ID')} akan dicatat sebagai HUTANG penuh. Lanjutkan?`;
+
+        Swal.fire({
+            title: 'Konfirmasi Kas Bon',
+            text: confirmMsg,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Catat Hutang',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                submitTransaction(total, paid);
+            }
+        });
         return;
     }
     
-    // Collect transaction data
-    const transactionData = {
-        customer_id: $('#customerSelect').val(),
-        customer_type: $('#customerType').val(),
-        items: cart.map(item => ({
-            product_id:      item.id,
-            quantity:        item.quantity,
-            price:           item.price,
-            bonus_quantity:  item.bonus_quantity || 0,
-            bonus_note:      item.is_premium && item.bonus_quantity > 0 
-                                ? `Bonus 20ml Sedang x${item.bonus_quantity} untuk ${item.name}` 
-                                : null,
-        })),
-        discount_amount: parseFloat($('#discount').val()) || 0,
-        discount_type: $('#discountType').val(),
-        payment_method: $('input[name="payment_method"]:checked').val(),
-        paid_amount: paid,
-        notes: $('#transactionNotes').val(),
-        _token: '{{ csrf_token() }}'
-    };
+    submitTransaction(total, paid);
+}
+
+function submitTransaction(total, paid) {
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const discountInput = parseFloat($('#discount').val()) || 0;
+        const discountType = $('#discountType').val();
+        let discountAmount = 0;
+        let discountPercent = 0;
+
+        if (discountType === 'percent') {
+            discountPercent = discountInput;
+            discountAmount = (subtotal * discountPercent) / 100;
+        } else {
+            discountAmount = discountInput;
+            discountPercent = 0;
+        }
+
+        const transactionData = {
+            customer_id: $('#customerSelect').val(),
+            customer_type: $('#customerType').val(),
+            receipt_visibility: $('#receiptVisibility').val(),
+            items: cart.map(item => ({
+                product_id:      item.id,
+                quantity:        item.quantity,
+                size:            item.size || null,
+                price:           item.price,
+                bonus_quantity:  0,
+                bonus_note:      item.is_bonus ? 'Bonus Wajib' : null,
+            })),
+            discount_amount: discountAmount,
+            discount_type: discountType,
+            discount_percent: discountPercent,
+            payment_method: $('input[name="payment_method"]:checked').val(),
+            paid_amount: paid,
+            notes: $('#transactionNotes').val(),
+            _token: '{{ csrf_token() }}'
+        };
     
     // Send to server
     $.ajax({
@@ -758,22 +1006,33 @@ function processPayment() {
         contentType: 'application/json',
         success: function(response) {
             // Print receipt
-            printReceipt(response.transaction_id);
+            if (response.transaction_id) {
+                printReceipt(response.transaction_id);
+            }
+            
+            const change = Math.max(0, paid - total);
+            const isDebt = paid < total;
             
             // Show success message
             Swal.fire({
-                title: 'Transaksi Berhasil!',
+                title: isDebt ? 'Piutang Dicatat!' : 'Transaksi Berhasil!',
                 html: `
                     <div class="text-center">
                         <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
                         <h5>Invoice: ${response.invoice_number}</h5>
                         <p>Total: Rp ${total.toLocaleString('id-ID')}</p>
-                        <p>Kembalian: Rp ${response.change.toLocaleString('id-ID')}</p>
+                        ${isDebt ? `<p class="text-danger font-weight-bold">Sisa Hutang: Rp ${(total - paid).toLocaleString('id-ID')}</p>` : `<p>Kembalian: Rp ${change.toLocaleString('id-ID')}</p>`}
+                        <hr>
+                        <a href="https://wa.me/?text=${response.whatsapp_message}" target="_blank" class="btn btn-success btn-lg btn-block mb-3">
+                            <i class="fab fa-whatsapp mr-1"></i> Kirim Invoice via WA
+                        </a>
                     </div>
                 `,
                 showCancelButton: true,
-                confirmButtonText: 'Cetak Ulang',
-                cancelButtonText: 'Transaksi Baru'
+                confirmButtonText: '<i class="fas fa-print mr-1"></i> Cetak Ulang',
+                cancelButtonText: 'Transaksi Baru',
+                confirmButtonColor: '#3498db',
+                cancelButtonColor: '#2D3047'
             }).then((result) => {
                 if (result.isConfirmed) {
                     printReceipt(response.transaction_id);
@@ -782,7 +1041,7 @@ function processPayment() {
             });
         },
         error: function(xhr) {
-            Swal.fire('Error', 'Terjadi kesalahan saat memproses transaksi', 'error');
+            Swal.fire('Error', xhr.responseJSON?.message || 'Terjadi kesalahan saat memproses transaksi', 'error');
         }
     });
 }

@@ -25,10 +25,11 @@ class StoreCustomerRequest extends FormRequest
 
         return [
             'name' => 'required|string|max:255',
-            'phone' => 'required|string|unique:customers,phone,' . $customerId,
+            'phone' => 'nullable|string|unique:customers,phone,' . $customerId,
             'email' => 'nullable|email|unique:customers,email,' . $customerId,
             'type' => 'required|in:retail,wholesale,vip',
             'address' => 'nullable|string',
+            'aroma_preferences' => 'nullable|string',
             'is_active' => 'nullable|boolean',
         ];
     }
