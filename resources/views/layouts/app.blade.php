@@ -562,9 +562,11 @@
     <!-- Sidebar -->
     <aside class="main-sidebar sidebar-light-primary elevation-4 sidebar-apms">
         <!-- Brand Logo -->
-        <a href="{{ route('dashboard') }}" class="brand-link border-0 text-center py-3">
-            <span class="brand-text font-weight-bold" style="color: var(--primary-color); font-size: 1.25rem; letter-spacing: -0.02rem;">
-                <i class="fas fa-spray-can mr-1"></i> {{ $app_settings['store_name'] ?? 'APMS' }}
+        <a href="{{ route('dashboard') }}" class="brand-link border-0 text-center py-2 d-flex align-items-center justify-content-center">
+            <img src="{{ asset('logotoko.png') }}" alt="{{ $app_settings['store_name'] ?? 'APMS' }}" 
+                 style="height: 32px; width: 32px; object-fit: contain; border-radius: 6px; margin-right: 8px;">
+            <span class="brand-text font-weight-bold" style="color: var(--primary-color); font-size: 1.2rem; letter-spacing: -0.02rem;">
+                {{ $app_settings['store_name'] ?? 'APMS' }}
             </span>
         </a>
 
