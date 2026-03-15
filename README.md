@@ -133,6 +133,196 @@ This platform unifies **point-of-sale**, **inventory intelligence**, **workforce
 | **Encryption** | AES-256 (Laravel default) | — |
 
 ---
+---
+
+## 📐 System Diagrams
+
+### 1. Use Case Diagram
+
+> Depicts the primary actors and their interactions with the APMS system.
+
+```mermaid
+graph LR
+    Owner(("👑 Owner"))
+    Admin(("🧑‍💼 Admin"))
+    Kasir(("🧑‍🔧 Kasir"))
+    System["⚙️ APMS System"]
+
+    Owner --> UC1[View All Reports & P&L]
+    Owner --> UC2[Verify Shift Closing Photo]
+    Owner --> UC3[Manage Users & Roles]
+    Owner --> UC4[Configure Store Settings]
+    Owner --> UC5[Access Dashboard & AI Insights]
+
+    Admin --> UC5
+    Admin --> UC6[Manage Products & Inventory]
+    Admin --> UC7[Manage Customers & Coupons]
+    Admin --> UC8[Process Wholesale Orders]
+    Admin --> UC9[Manage Employees & Attendance]
+    Admin --> UC10[View Reports]
+    Admin --> UC11[Manage Expenses]
+
+    Kasir --> UC12[Process Retail POS Transaction]
+    Kasir --> UC13[Open & Close Shift]
+    Kasir --> UC14[Upload Shift Closing Photo]
+    Kasir --> UC15[Record Daily Attendance]
+    Kasir --> UC16[View Own Dashboard]
+
+    UC1 & UC2 & UC3 & UC4 & UC5 & UC6 & UC7 & UC8 & UC9 & UC10 & UC11 & UC12 & UC13 & UC14 & UC15 & UC16 --> System
+
+    style Owner fill:#f0c040,stroke:#c09020,color:#000
+    style Admin fill:#2c7be5,stroke:#1a5bbf,color:#fff
+    style Kasir fill:#00b894,stroke:#009070,color:#fff
+    style System fill:#f8f9fa,stroke:#dee2e6,color:#333
+```
+
+---
+
+### 2. Sequence Diagram — Retail POS Transaction
+
+> Shows the step-by-step interaction between the Cashier, the POS interface, and the system back-end during a standard retail sale.
+
+```mermaid
+sequenceDiagram
+    actor Kasir
+    participant POS as 🖥️ POS Interface
+    participant Server as ⚙️ Laravel Server
+    participant DB as 🗄️ MySQL Database
+
+    Kasir->>POS: Select Product (Scan/Search)
+    POS->>Server: GET /api/products/{id}
+    Server->>DB: SELECT inventory WHERE product_id = ?
+    DB-->>Server: current_stock, price, category
+    Server-->>POS: Product data + bonus eligibility
+    POS-->>Kasir: Display product & auto-bonus info
+
+    Kasir->>POS: Apply Coupon Code
+    POS->>Server: POST /coupons/validate
+    Server->>DB: SELECT coupon WHERE code = ? AND is_active = 1
+    DB-->>Server: discount_value, type
+    Server-->>POS: Discount applied to cart
+
+    Kasir->>POS: Confirm Payment (Cash/E-Wallet)
+    POS->>Server: POST /transactions (cart payload)
+
+    activate Server
+    Server->>DB: BEGIN TRANSACTION
+    Server->>DB: INSERT transactions
+    Server->>DB: INSERT transaction_details (loop per item)
+    Server->>DB: UPDATE inventories (stock_out -= qty)
+    Server->>DB: UPDATE customers (loyalty_points += earned)
+    Server->>DB: UPDATE coupons (used_count += 1)
+    Server->>DB: COMMIT
+    deactivate Server
+
+    Server-->>POS: 200 OK + Invoice Data
+    POS-->>Kasir: Display Receipt & Print Option
+```
+
+---
+
+### 3. Entity Relationship Diagram (ERD)
+
+> Core database relationships powering the APMS platform.
+
+```mermaid
+erDiagram
+    USERS {
+        bigint id PK
+        string name
+        string email
+        string role
+    }
+    PRODUCTS {
+        bigint id PK
+        string name
+        string size
+        decimal selling_price
+        decimal wholesale_price
+        bigint category_id FK
+    }
+    PRODUCT_CATEGORIES {
+        bigint id PK
+        string name
+        string color
+    }
+    INVENTORIES {
+        bigint id PK
+        bigint product_id FK
+        int current_stock
+        int minimum_stock
+        decimal cost_per_unit
+        date expiration_date
+        string status
+    }
+    TRANSACTIONS {
+        bigint id PK
+        string invoice_number
+        bigint user_id FK
+        bigint customer_id FK
+        bigint shift_id FK
+        decimal total_amount
+        string payment_method
+        string customer_type
+    }
+    TRANSACTION_DETAILS {
+        bigint id PK
+        bigint transaction_id FK
+        bigint product_id FK
+        int quantity
+        decimal unit_price
+    }
+    CUSTOMERS {
+        bigint id PK
+        string name
+        string phone
+        int loyalty_points
+    }
+    SHIFTS {
+        bigint id PK
+        bigint user_id FK
+        decimal initial_cash
+        decimal final_cash
+        string status
+        string photo_path
+    }
+    COUPONS {
+        bigint id PK
+        string code
+        string type
+        decimal value
+        int used_count
+        int max_usage
+    }
+    EXPENSES {
+        bigint id PK
+        bigint user_id FK
+        string description
+        decimal amount
+    }
+    ATTENDANCES {
+        bigint id PK
+        bigint user_id FK
+        string employee_name
+        string status
+        timestamp time_in
+        timestamp time_out
+    }
+
+    USERS ||--o{ TRANSACTIONS : "processes"
+    USERS ||--o{ SHIFTS : "owns"
+    USERS ||--o{ ATTENDANCES : "records"
+    CUSTOMERS ||--o{ TRANSACTIONS : "makes"
+    TRANSACTIONS ||--|{ TRANSACTION_DETAILS : "contains"
+    PRODUCTS ||--|{ TRANSACTION_DETAILS : "included_in"
+    PRODUCTS ||--|| INVENTORIES : "tracked_in"
+    PRODUCTS }o--|| PRODUCT_CATEGORIES : "belongs_to"
+    SHIFTS ||--o{ TRANSACTIONS : "scopes"
+    COUPONS ||--o{ TRANSACTIONS : "applied_to"
+    USERS ||--o{ EXPENSES : "records"
+```
+
+---
 
 ## 🚀 Quick Start
 
