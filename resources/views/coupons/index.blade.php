@@ -20,34 +20,37 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>Kode</th>
-                                <th>Tipe</th>
-                                <th>Nilai</th>
-                                <th>Berlaku Hingga</th>
-                                <th>Digunakan</th>
-                                <th>Status</th>
-                                <th>Aksi</th>
+                                <th class="text-nowrap">Kode & Tipe</th>
+                                <th class="text-nowrap">Nilai</th>
+                                <th class="d-none d-sm-table-cell text-nowrap">Berlaku</th>
+                                <th class="d-none d-md-table-cell text-nowrap">Penggunaan</th>
+                                <th class="text-nowrap text-center">Status</th>
+                                <th class="text-nowrap">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($coupons as $coupon)
                             <tr>
-                                <td><strong>{{ $coupon->code }}</strong></td>
-                                <td><span class="badge badge-info">{{ $coupon->type }}</span></td>
                                 <td>
+                                    <div class="font-weight-bold text-primary">{{ $coupon->code }}</div>
+                                    <div class="text-xs-mobile text-muted">
+                                        {{ ucfirst($coupon->type) }} | Exp: {{ $coupon->expiration_date->format('d/m/y') }}
+                                    </div>
+                                </td>
+                                <td class="font-weight-bold text-nowrap">
                                     @if($coupon->is_percentage)
                                         {{ $coupon->value }}%
                                     @else
-                                        Rp {{ number_format($coupon->value, 0, ',', '.') }}
+                                        Rp{{ number_format($coupon->value, 0, ',', '.') }}
                                     @endif
                                 </td>
-                                <td>{{ $coupon->expiration_date->format('d/m/Y') }}</td>
-                                <td>{{ $coupon->used_count }} / {{ $coupon->max_usage }}</td>
-                                <td>
+                                <td class="d-none d-sm-table-cell text-nowrap">{{ $coupon->expiration_date->format('d/m/Y') }}</td>
+                                <td class="d-none d-md-table-cell text-nowrap">{{ $coupon->used_count }} / {{ $coupon->max_usage }}</td>
+                                <td class="text-center">
                                     @if($coupon->is_active)
-                                        <span class="badge badge-success">Aktif</span>
+                                        <span class="badge badge-success text-xs-mobile">Aktif</span>
                                     @else
-                                        <span class="badge badge-danger">Nonaktif</span>
+                                        <span class="badge badge-danger text-xs-mobile">Nonaktif</span>
                                     @endif
                                 </td>
                                 <td>
@@ -61,6 +64,9 @@
                             @endforeach
                         </tbody>
                     </table>
+                    <div class="mt-4">
+                        {{ $coupons->links() }}
+                    </div>
                     @else
                     <div class="alert alert-info">Belum ada kupon</div>
                     @endif

@@ -60,54 +60,59 @@
                         <div class="tab-pane fade show active" id="all" role="tabpanel">
                             <div class="table-responsive">
                                 <table class="table table-hover table-striped" id="inventoryTable">
-                                    <thead>
+                                    <thead class="text-nowrap bg-light">
                                         <tr>
-                                            <th>Produk</th>
-                                            <th>Batch</th>
-                                            <th>Stok Awal</th>
-                                            <th>Masuk</th>
-                                            <th>Keluar</th>
-                                            <th>Stok Sekarang</th>
-                                            <th>Minimal</th>
-                                            <th>Harga Beli</th>
-                                            <th>Expired</th>
-                                            <th>Status</th>
-                                            <th>Aksi</th>
+                                            <th>Produk & Batch</th>
+                                            <th class="d-none d-md-table-cell">Batch</th>
+                                            <th class="d-none d-lg-table-cell text-center">Awal</th>
+                                            <th class="d-none d-sm-table-cell text-center">Masuk</th>
+                                            <th class="d-none d-sm-table-cell text-center">Keluar</th>
+                                            <th class="text-center">Stok</th>
+                                            <th class="d-none d-xl-table-cell text-center">Min</th>
+                                            <th class="d-none d-lg-table-cell">Harga</th>
+                                            <th class="d-none d-md-table-cell">Exp</th>
+                                            <th class="d-none d-sm-table-cell">Status</th>
+                                            <th class="text-center">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach($inventories as $inventory)
                                         <tr>
-                                            <td>
+                                            <td class="text-nowrap">
                                                 <div class="d-flex align-items-center">
                                                     @if($inventory->product->image)
                                                     <img src="{{ asset('storage/' . $inventory->product->image) }}" 
-                                                         class="img-circle img-size-32 mr-2">
+                                                         class="img-circle img-size-32 mr-2 d-none d-sm-block">
                                                     @endif
                                                     <div>
-                                                        <strong>{{ $inventory->product->name }}</strong><br>
-                                                        <small class="text-muted">{{ $inventory->product->size }}</small>
+                                                        <div class="font-weight-bold truncate-text" style="max-width: 150px;">{{ $inventory->product->name }}</div>
+                                                        <div class="text-xs-mobile text-muted">
+                                                            {{ $inventory->product->size }} 
+                                                            <span class="d-md-none">| B: {{ $inventory->batch_number ?? '-' }}</span>
+                                                        </div>
+                                                        <div class="d-sm-none mt-1">
+                                                            @if($inventory->expiration_date)
+                                                                <span class="badge badge-light border text-xs-mobile">Exp: {{ \Carbon\Carbon::parse($inventory->expiration_date)->format('d/m/y') }}</span>
+                                                            @endif
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td>
-                                                @if($inventory->batch_number)
-                                                <span class="badge badge-info">{{ $inventory->batch_number }}</span>
-                                                @else
-                                                <span class="text-muted">-</span>
-                                                @endif
-                                            </td>
-                                            <td>{{ $inventory->initial_stock }}</td>
-                                            <td class="text-success">+{{ $inventory->stock_in }}</td>
-                                            <td class="text-danger">-{{ $inventory->stock_out }}</td>
-                                            <td>
-                                                <span class="badge badge-{{ $inventory->current_stock == 0 ? 'danger' : ($inventory->current_stock < $inventory->minimum_stock ? 'warning' : 'success') }}">
+                                            <td class="d-none d-md-table-cell">{{ $inventory->batch_number ?? '-' }}</td>
+                                            <td class="d-none d-lg-table-cell text-center">{{ $inventory->initial_stock }}</td>
+                                            <td class="text-success d-none d-sm-table-cell text-center">+{{ $inventory->stock_in }}</td>
+                                            <td class="text-danger d-none d-sm-table-cell text-center">-{{ $inventory->stock_out }}</td>
+                                            <td class="text-center">
+                                                <span class="badge badge-{{ $inventory->current_stock == 0 ? 'danger' : ($inventory->current_stock <= $inventory->minimum_stock ? 'warning' : 'success') }} px-2">
                                                     {{ $inventory->current_stock }}
                                                 </span>
+                                                <div class="d-sm-none mt-1 text-xs-mobile">
+                                                    <span class="text-success">+{{ $inventory->stock_in }}</span> / <span class="text-danger">-{{ $inventory->stock_out }}</span>
+                                                </div>
                                             </td>
-                                            <td>{{ $inventory->minimum_stock }}</td>
-                                            <td>Rp {{ number_format($inventory->cost_per_unit, 0, ',', '.') }}</td>
-                                            <td>
+                                            <td class="d-none d-xl-table-cell">{{ $inventory->minimum_stock }}</td>
+                                            <td class="d-none d-lg-table-cell text-nowrap">Rp {{ number_format($inventory->cost_per_unit, 0, ',', '.') }}</td>
+                                            <td class="d-none d-md-table-cell">
                                                 @if($inventory->expiration_date)
                                                     @php
                                                         $expDate = \Carbon\Carbon::parse($inventory->expiration_date);
@@ -116,25 +121,17 @@
                                                     @endphp
                                                     
                                                     @if($diffDays < 0)
-                                                        <span class="badge badge-danger">
-                                                            {{ $expDate->format('d/m/Y') }}
-                                                            <i class="fas fa-exclamation ml-1"></i>
-                                                        </span>
+                                                        <span class="badge badge-danger">{{ $expDate->format('d/m/Y') }}</span>
                                                     @elseif($diffDays <= 30)
-                                                        <span class="badge badge-warning">
-                                                            {{ $expDate->format('d/m/Y') }}
-                                                            ({{ $diffDays }} hari)
-                                                        </span>
+                                                        <span class="badge badge-warning">{{ $expDate->format('d/m/Y') }}</span>
                                                     @else
-                                                        <span class="badge badge-success">
-                                                            {{ $expDate->format('d/m/Y') }}
-                                                        </span>
+                                                        <span class="badge badge-success">{{ $expDate->format('d/m/Y') }}</span>
                                                     @endif
                                                 @else
                                                     <span class="text-muted">-</span>
                                                 @endif
                                             </td>
-                                            <td>
+                                            <td class="d-none d-sm-table-cell text-nowrap">
                                                 @if($inventory->status == 'in_stock')
                                                     <span class="badge badge-success">Tersedia</span>
                                                 @elseif($inventory->status == 'low_stock')
@@ -168,6 +165,10 @@
                                         @endforeach
                                     </tbody>
                                 </table>
+
+                                <div class="mt-4">
+                                    {{ $inventories->links() }}
+                                </div>
                             </div>
                         </div>
                         
@@ -180,42 +181,52 @@
                             </div>
                             <div class="table-responsive">
                                 <table class="table table-hover">
-                                    <thead>
+                                    <thead class="text-nowrap bg-light">
                                         <tr>
                                             <th>Produk</th>
-                                            <th>Stok Sekarang</th>
-                                            <th>Minimal</th>
-                                            <th>Kekurangan</th>
-                                            <th>Estimasi Habis</th>
-                                            <th>Aksi</th>
+                                            <th>Stok</th>
+                                            <th class="d-none d-sm-table-cell">Min</th>
+                                            <th class="d-none d-md-table-cell">Kurang</th>
+                                            <th class="d-none d-sm-table-cell">Estimasi</th>
+                                            <th class="text-center">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach($lowStock as $item)
-                                        <tr>
-                                            <td>{{ $item->product->name }}</td>
+                                        @php
+                                            $dailyAvg = $item->daily_average_sales ?? 1;
+                                            $daysLeft = $dailyAvg > 0 ? floor($item->current_stock / $dailyAvg) : 0;
+                                        @endphp
+                                        <tr class="text-nowrap">
                                             <td>
-                                                <span class="badge badge-warning">{{ $item->current_stock }}</span>
+                                                <div class="font-weight-bold truncate-text">{{ $item->product->name }}</div>
+                                                <div class="text-xs-mobile text-muted">{{ $item->product->size }}</div>
                                             </td>
-                                            <td>{{ $item->minimum_stock }}</td>
-                                            <td>{{ $item->minimum_stock - $item->current_stock }}</td>
                                             <td>
-                                                @php
-                                                    $dailyAvg = $item->daily_average_sales ?? 1;
-                                                    $daysLeft = $dailyAvg > 0 ? floor($item->current_stock / $dailyAvg) : 0;
-                                                @endphp
+                                                <span class="badge badge-warning px-2">{{ $item->current_stock }}</span>
+                                                <div class="d-sm-none mt-1">
+                                                    @if($daysLeft <= 3)
+                                                        <span class="text-danger text-xs-mobile font-weight-bold">{{ $daysLeft }} hr lagi</span>
+                                                    @else
+                                                        <span class="text-warning text-xs-mobile">{{ $daysLeft }} hr lagi</span>
+                                                    @endif
+                                                </div>
+                                            </td>
+                                            <td class="d-none d-sm-table-cell">{{ $item->minimum_stock }}</td>
+                                            <td class="d-none d-md-table-cell">{{ $item->minimum_stock - $item->current_stock }}</td>
+                                            <td class="d-none d-sm-table-cell">
                                                 @if($daysLeft <= 3)
-                                                    <span class="badge badge-danger">{{ $daysLeft }} hari</span>
+                                                    <span class="badge badge-danger">{{ $daysLeft }} hr</span>
                                                 @elseif($daysLeft <= 7)
-                                                    <span class="badge badge-warning">{{ $daysLeft }} hari</span>
+                                                    <span class="badge badge-warning">{{ $daysLeft }} hr</span>
                                                 @else
-                                                    <span class="badge badge-success">{{ $daysLeft }} hari</span>
+                                                    <span class="badge badge-success">{{ $daysLeft }} hr</span>
                                                 @endif
                                             </td>
-                                            <td>
+                                            <td class="text-center">
                                                 <button class="btn btn-primary btn-sm" 
                                                         onclick="quickReorder({{ $item->product_id }})">
-                                                    <i class="fas fa-shopping-cart"></i> Pesan Ulang
+                                                    <i class="fas fa-redo"></i>
                                                 </button>
                                             </td>
                                         </tr>
@@ -275,15 +286,15 @@
                             </div>
                             <div class="table-responsive">
                                 <table class="table table-hover">
-                                    <thead>
+                                    <thead class="text-nowrap bg-light">
                                         <tr>
                                             <th>Produk</th>
-                                            <th>Batch</th>
+                                            <th class="d-none d-md-table-cell">Batch</th>
                                             <th>Stok</th>
-                                            <th>Tanggal Expired</th>
-                                            <th>Sisa Hari</th>
-                                            <th>Nilai Stok</th>
-                                            <th>Rekomendasi</th>
+                                            <th>Expired</th>
+                                            <th class="d-none d-sm-table-cell">Sisa (Hari)</th>
+                                            <th class="d-none d-lg-table-cell">Nilai</th>
+                                            <th class="d-none d-md-table-cell">Info</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -294,20 +305,23 @@
                                             $diffDays = $now->diffInDays($expDate, false);
                                             $stockValue = $item->current_stock * $item->cost_per_unit;
                                         @endphp
-                                        <tr>
-                                            <td>{{ $item->product->name }}</td>
-                                            <td>{{ $item->batch_number ?? '-' }}</td>
-                                            <td>{{ $item->current_stock }}</td>
-                                            <td>{{ $expDate->format('d/m/Y') }}</td>
+                                        <tr class="text-nowrap">
                                             <td>
+                                                <div class="font-weight-bold truncate-text" style="max-width: 150px;">{{ $item->product->name }}</div>
+                                                <small class="text-muted d-block d-md-none">B: {{ $item->batch_number ?? '-' }}</small>
+                                            </td>
+                                            <td class="d-none d-md-table-cell">{{ $item->batch_number ?? '-' }}</td>
+                                            <td>{{ $item->current_stock }}</td>
+                                            <td><span class="badge badge-{{ $diffDays < 7 ? 'danger' : 'warning' }}">{{ $expDate->format('d/m/y') }}</span></td>
+                                            <td class="d-none d-sm-table-cell">
                                                 @if($diffDays < 0)
-                                                    <span class="badge badge-danger">EXPIRED</span>
+                                                    <span class="text-danger">EXPIRED</span>
                                                 @else
-                                                    <span class="badge badge-warning">{{ $diffDays }} hari</span>
+                                                    {{ $diffDays }} hr
                                                 @endif
                                             </td>
-                                            <td>Rp {{ number_format($stockValue, 0, ',', '.') }}</td>
-                                            <td>
+                                            <td class="d-none d-lg-table-cell">Rp {{ number_format($stockValue, 0, ',', '.') }}</td>
+                                            <td class="d-none d-md-table-cell">
                                                 @if($diffDays <= 7)
                                                     <span class="badge badge-danger">Diskon Cepat!</span>
                                                 @elseif($diffDays <= 15)
@@ -409,6 +423,31 @@
 .nav-tabs .nav-link.active {
     border-bottom: 3px solid #FF6B35;
     font-weight: bold;
+}
+.truncate-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.text-xs {
+    font-size: 0.65rem;
+}
+.smaller {
+    font-size: 0.75rem;
+}
+@media (max-width: 576px) {
+    .card-tools {
+        margin-top: 10px;
+        float: none !important;
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+    .card-tools .btn {
+        flex: 0 0 auto;
+        margin-right: 5px;
+        font-size: 0.8rem;
+    }
 }
 </style>
 @endpush

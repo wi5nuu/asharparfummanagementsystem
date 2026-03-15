@@ -46,7 +46,10 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('/', [ReportController::class, 'index'])->name('index');
         Route::get('/sales', [ReportController::class, 'sales'])->name('sales');
+        Route::get('/sales/pdf', [ReportController::class, 'exportSales'])->name('sales.pdf');
         Route::get('/inventory', [ReportController::class, 'inventory'])->name('inventory');
+        Route::get('/inventory/low-stock/pdf', [ReportController::class, 'exportLowStock'])->name('inventory.low-stock.pdf');
+        Route::get('/inventory/expiry/pdf', [ReportController::class, 'exportExpiry'])->name('inventory.expiry.pdf');
         Route::get('/profit-loss', [ReportController::class, 'profitLoss'])->name('profit-loss');
         Route::get('/customers', [ReportController::class, 'customerAnalytics'])->name('customers');
         Route::get('/export/sales', [ReportController::class, 'exportSales'])->name('export.sales');
@@ -58,6 +61,10 @@ Route::middleware(['auth'])->group(function () {
     
     // Settings
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
+    Route::get('/settings/profile', [SettingController::class, 'profile'])->name('settings.profile');
+    Route::post('/settings/profile', [SettingController::class, 'updateProfile'])->name('settings.profile.update');
+    Route::post('/settings/password', [SettingController::class, 'updatePassword'])->name('settings.password.update');
     Route::post('/settings/backup', [SettingController::class, 'backup'])->name('settings.backup');
     Route::post('/settings/restore', [SettingController::class, 'restore'])->name('settings.restore');
 
@@ -70,6 +77,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Shift Management (Closing Kasir)
     Route::resource('shifts', \App\Http\Controllers\ShiftController::class);
+    Route::post('/shifts/{shift}/review-photo', [\App\Http\Controllers\ShiftController::class, 'reviewPhoto'])->name('shifts.review-photo');
 
     // Debt Management (Kas Bon)
     Route::get('debts', [\App\Http\Controllers\DebtController::class, 'index'])->name('debts.index');
@@ -77,6 +85,22 @@ Route::middleware(['auth'])->group(function () {
 
     // POS Helper Routes
     Route::get('transactions/customer-info/{id}', [\App\Http\Controllers\TransactionController::class, 'getCustomerInfo'])->name('transactions.customer-info');
+
+    // Cashier Attendances (Absensi Harian)
+    Route::post('attendances', [\App\Http\Controllers\AttendanceController::class, 'store'])->name('attendances.store');
+    Route::post('attendances/{attendance}/checkout', [\App\Http\Controllers\AttendanceController::class, 'checkout'])->name('attendances.checkout');
+    Route::get('attendances', [\App\Http\Controllers\AttendanceController::class, 'index'])->name('attendances.index');
+    Route::post('attendances/employees', [\App\Http\Controllers\AttendanceController::class, 'addEmployee'])->name('attendances.add-employee');
+    Route::delete('attendances/employees/{user}', [\App\Http\Controllers\AttendanceController::class, 'removeEmployee'])->name('attendances.remove-employee');
+
+    // Wholesale Management (Grosir)
+    Route::get('/wholesale/create', [\App\Http\Controllers\WholesaleController::class, 'create'])->name('wholesale.create');
+    Route::post('/wholesale', [\App\Http\Controllers\WholesaleController::class, 'store'])->name('wholesale.store');
+    Route::get('/wholesale', [\App\Http\Controllers\WholesaleController::class, 'index'])->name('wholesale.index');
+    Route::get('/wholesale/{order}', [\App\Http\Controllers\WholesaleController::class, 'show'])->name('wholesale.show');
+    Route::post('/wholesale/{order}/confirm', [\App\Http\Controllers\WholesaleController::class, 'confirm'])->name('wholesale.confirm');
+    Route::post('/wholesale/{order}/ready', [\App\Http\Controllers\WholesaleController::class, 'markReady'])->name('wholesale.ready');
+    Route::get('/wholesale/{order}/print', [\App\Http\Controllers\WholesaleController::class, 'print'])->name('wholesale.print');
 });
 
 // API Routes
@@ -84,6 +108,7 @@ Route::prefix('api')->middleware('auth')->group(function () {
     Route::get('/dashboard/stats', [DashboardController::class, 'getStats']);
     Route::get('/products/search', [ProductController::class, 'search']);
     Route::get('/inventory/alerts', [InventoryController::class, 'getAlerts']);
+    Route::post('/ai/ask', [\App\Http\Controllers\AiAssistantController::class, 'ask']);
 });
 
 require __DIR__.'/auth.php';

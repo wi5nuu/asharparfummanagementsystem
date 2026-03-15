@@ -33,6 +33,8 @@
                             <label>Posisi</label>
                             <select name="role" class="form-control" required>
                                 <option value="cashier" {{ $employee->role == 'cashier' ? 'selected' : '' }}>Kasir</option>
+                                <option value="packing" {{ $employee->role == 'packing' ? 'selected' : '' }}>Packing</option>
+                                <option value="admin" {{ $employee->role == 'admin' ? 'selected' : '' }}>Admin</option>
                                 <option value="manager" {{ $employee->role == 'manager' ? 'selected' : '' }}>Manager</option>
                                 <option value="supervisor" {{ $employee->role == 'supervisor' ? 'selected' : '' }}>Supervisor</option>
                             </select>

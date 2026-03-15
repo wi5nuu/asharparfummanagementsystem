@@ -50,15 +50,15 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Pelanggan</th>
-                                    <th>Kontak</th>
-                                    <th>Tipe</th>
-                                    <th>Total Transaksi</th>
-                                    <th>Total Belanja</th>
-                                    <th>Poin</th>
-                                    <th>Status</th>
-                                    <th>Aksi</th>
+                                    <th class="d-none d-md-table-cell text-nowrap">ID</th>
+                                    <th class="text-nowrap">Pelanggan</th>
+                                    <th class="text-nowrap">Kontak</th>
+                                    <th class="d-none d-lg-table-cell text-nowrap">Tipe</th>
+                                    <th class="d-none d-xl-table-cell text-center text-nowrap">Transaksi</th>
+                                    <th class="d-none d-sm-table-cell text-nowrap">Total Belanja</th>
+                                    <th class="d-none d-lg-table-cell text-center text-nowrap">Poin</th>
+                                    <th class="d-none d-md-table-cell text-nowrap">Status</th>
+                                    <th class="text-nowrap">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -69,27 +69,30 @@
                                     $points = floor($totalSpent / 10000); // 1 point per 10k
                                 @endphp
                                 <tr>
-                                    <td>
+                                    <td class="d-none d-md-table-cell">
                                         <span class="badge badge-light">{{ $customer->customer_code }}</span>
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <div class="img-circle img-size-32 bg-primary d-flex align-items-center justify-content-center mr-2">
+                                            <div class="img-circle img-size-32 bg-primary d-flex align-items-center justify-content-center mr-2 flex-shrink-0">
                                                 <i class="fas fa-user text-white"></i>
                                             </div>
                                             <div>
-                                                <strong>{{ $customer->name }}</strong><br>
-                                                <small class="text-muted">Bergabung: {{ $customer->created_at->format('d/m/Y') }}</small>
+                                                <div class="font-weight-bold truncate-text">{{ $customer->name }}</div>
+                                                <div class="d-sm-none text-xs-mobile text-muted">
+                                                    {{ ucfirst($customer->type) }} | {{ $points }} Poin | {{ $customer->phone ?? 'No Phone' }}
+                                                </div>
+                                                <small class="text-muted d-none d-md-block">Joined: {{ $customer->created_at->format('d/m/Y') }}</small>
                                             </div>
                                         </div>
                                     </td>
                                     <td>
-                                        <div>
-                                            <small><i class="fas fa-phone text-muted mr-1"></i> {{ $customer->phone ?? '-' }}</small><br>
-                                            <small><i class="fas fa-envelope text-muted mr-1"></i> {{ $customer->email ?? '-' }}</small>
+                                        <div class="small">
+                                            <div><i class="fas fa-phone text-muted mr-1"></i> {{ $customer->phone ?? '-' }}</div>
+                                            <div class="d-none d-md-block"><i class="fas fa-envelope text-muted mr-1"></i> {{ $customer->email ?? '-' }}</div>
                                         </div>
                                     </td>
-                                    <td>
+                                    <td class="d-none d-lg-table-cell">
                                         @if($customer->type == 'wholesale')
                                             <span class="badge badge-info">Wholesale</span>
                                         @elseif($customer->type == 'vip')
@@ -98,24 +101,25 @@
                                             <span class="badge badge-secondary">Retail</span>
                                         @endif
                                     </td>
-                                    <td>
+                                    <td class="d-none d-xl-table-cell">
                                         <div class="text-center">
-                                            <div class="h5 mb-0">{{ $totalTransactions }}</div>
-                                            <small class="text-muted">transaksi</small>
+                                            <div class="font-weight-bold">{{ $totalTransactions }}</div>
+                                            <small class="text-muted">trns</small>
+                                            <div class="font-weight-bold text-nowrap">{{ $totalTransactions }}</div>
+                                            <small class="text-muted text-nowrap">trns</small>
                                         </div>
                                     </td>
-                                    <td>
-                                        <div class="text-success">
-                                            <strong>Rp {{ number_format($totalSpent, 0, ',', '.') }}</strong>
+                                    <td class="d-none d-sm-table-cell">
+                                        <div class="text-success font-weight-bold text-nowrap">
+                                            Rp {{ number_format($totalSpent, 0, ',', '.') }}
                                         </div>
                                     </td>
-                                    <td>
+                                    <td class="d-none d-lg-table-cell">
                                         <div class="text-center">
-                                            <div class="h5 mb-0">{{ $points }}</div>
-                                            <small class="text-muted">poin</small>
+                                            <div class="font-weight-bold text-nowrap">{{ $points }}</div>
                                         </div>
                                     </td>
-                                    <td>
+                                    <td class="d-none d-md-table-cell">
                                         @if($customer->is_active)
                                             <span class="badge badge-success">Aktif</span>
                                         @else
@@ -150,16 +154,15 @@
                 </div>
                 <div class="card-footer">
                     <div class="row">
-                        <div class="col-md-6">
-                            <div class="small">
-                                Total Pelanggan: <strong>{{ $customers->total() }}</strong> |
-                                Aktif: <strong>{{ $activeCustomers }}</strong> |
-                                Wholesale: <strong>{{ $wholesaleCustomers }}</strong>
+                        <div class="col-sm-6">
+                            <div class="small text-center text-sm-left">
+                                Total: <strong>{{ $customers->total() }}</strong> |
+                                Aktif: <strong>{{ $activeCustomers }}</strong>
                             </div>
                         </div>
-                        <div class="col-md-6 text-right">
+                        <div class="col-sm-6 text-center text-sm-right mt-2 mt-sm-0">
                             <div class="small">
-                                Rata-rata Belanja: <strong>Rp {{ number_format($averageSpent, 0, ',', '.') }}</strong>
+                                Rata-rata: <strong>Rp {{ number_format($averageSpent, 0, ',', '.') }}</strong>
                             </div>
                         </div>
                     </div>

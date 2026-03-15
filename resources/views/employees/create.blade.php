@@ -36,9 +36,11 @@
                             <label>Posisi</label>
                             <select name="role" class="form-control @error('role') is-invalid @enderror" required>
                                 <option value="">Pilih Posisi</option>
-                                <option value="cashier">Kasir</option>
-                                <option value="manager">Manager</option>
-                                <option value="supervisor">Supervisor</option>
+                                <option value="cashier" {{ old('role') == 'cashier' ? 'selected' : '' }}>Kasir</option>
+                                <option value="packing" {{ old('role') == 'packing' ? 'selected' : '' }}>Packing</option>
+                                <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
+                                <option value="manager" {{ old('role') == 'manager' ? 'selected' : '' }}>Manager</option>
+                                <option value="supervisor" {{ old('role') == 'supervisor' ? 'selected' : '' }}>Supervisor</option>
                             </select>
                             @error('role') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>

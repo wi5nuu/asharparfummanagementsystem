@@ -74,17 +74,17 @@
                         <table class="table table-hover" id="productsTable">
                             <thead>
                                 <tr>
-                                    <th width="50">
+                                    <th width="50" class="text-nowrap">
                                         <input type="checkbox" id="selectAll">
                                     </th>
-                                    <th>Kode</th>
-                                    <th>Produk</th>
-                                    <th>Kategori</th>
-                                    <th>Ukuran</th>
-                                    <th>Harga</th>
-                                    <th>Stok</th>
-                                    <th>Status</th>
-                                    <th>Aksi</th>
+                                    <th class="d-none d-md-table-cell text-nowrap">Kode</th>
+                                    <th class="text-nowrap">Produk</th>
+                                    <th class="d-none d-sm-table-cell text-nowrap">Kategori</th>
+                                    <th class="d-none d-lg-table-cell text-nowrap">Ukuran</th>
+                                    <th class="text-nowrap">Harga</th>
+                                    <th class="text-nowrap">Stok</th>
+                                    <th class="d-none d-xl-table-cell text-nowrap">Status</th>
+                                    <th class="text-nowrap">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -97,7 +97,7 @@
                                     <td>
                                         <input type="checkbox" class="product-checkbox" value="{{ $product->id }}">
                                     </td>
-                                    <td>
+                                    <td class="d-none d-md-table-cell">
                                         <span class="badge badge-light">{{ $product->internal_id }}</span><br>
                                         <small class="text-muted">{{ $product->barcode }}</small>
                                     </td>
@@ -113,25 +113,28 @@
                                             </div>
                                             @endif
                                             <div>
-                                                <strong>{{ $product->name }}</strong><br>
-                                                <small class="text-muted">{{ Str::limit($product->description, 30) }}</small>
+                                                <div class="font-weight-bold truncate-text">{{ $product->name }}</div>
+                                                <div class="d-sm-none text-xs-mobile text-muted">
+                                                    {{ $product->category->name ?? '-' }} | {{ $product->size }}{{ $product->unit }} | {{ $product->barcode }}
+                                                </div>
+                                                <small class="text-muted d-none d-md-block">{{ Str::limit($product->description, 30) }}</small>
                                             </div>
                                         </div>
                                     </td>
-                                    <td>
+                                    <td class="d-none d-sm-table-cell">
                                         <span class="badge" style="background-color: {{ $product->category->color ?? '#FF6B35' }}; color: white;">
                                             {{ $product->category->name ?? '-' }}
                                         </span>
                                     </td>
-                                    <td>{{ $product->size }} {{ $product->unit }}</td>
+                                    <td class="d-none d-lg-table-cell">{{ $product->size }} {{ $product->unit }}</td>
                                     <td>
                                         <div class="price-info">
                                             <div class="text-success font-weight-bold">
                                                 Rp {{ number_format($product->selling_price, 0, ',', '.') }}
                                             </div>
                                             @if($product->wholesale_price)
-                                            <div class="text-primary small">
-                                                Grosir: Rp {{ number_format($product->wholesale_price, 0, ',', '.') }}
+                                            <div class="text-primary smaller">
+                                                G: Rp {{ number_format($product->wholesale_price, 0, ',', '.') }}
                                             </div>
                                             @endif
                                         </div>
@@ -145,7 +148,7 @@
                                             <span class="badge badge-success">{{ $currentStock }}</span>
                                         @endif
                                     </td>
-                                    <td>
+                                    <td class="d-none d-xl-table-cell">
                                         @if($product->is_active)
                                             <span class="badge badge-success">Aktif</span>
                                         @else
@@ -251,18 +254,37 @@
 @push('styles')
 <style>
 .price-info {
-    min-width: 120px;
+    min-width: 100px;
+}
+.smaller {
+    font-size: 0.75rem;
 }
 .img-circle {
     width: 32px;
     height: 32px;
     border-radius: 50%;
     overflow: hidden;
+    flex-shrink: 0;
 }
 .img-circle img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+th {
+    white-space: nowrap;
+}
+@media (max-width: 576px) {
+    .container-fluid {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+    .card-body {
+        padding: 10px;
+    }
+    .info-box {
+        margin-bottom: 10px;
+    }
 }
 </style>
 @endpush

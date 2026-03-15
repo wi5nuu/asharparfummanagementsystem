@@ -29,25 +29,36 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // Create admin user or update if exists
+        // 1. Create Owner Account
         User::updateOrCreate(
-            ['role' => 'admin'], // Match by role to update the existing admin
+            ['email' => 'ashar.parfum@gmail.com'],
             [
-                'name' => 'Admin APMS',
-                'email' => 'wisnualfian117@gmail.com',
-                'phone' => '08123456789',
-                'password' => bcrypt('wisnualfian117!120825'),
+                'name' => 'Owner - Ashar Parfum',
+                'role' => 'owner',
+                'phone' => '0811500460',
+                'password' => bcrypt('ashar.parfum.bekasi.owner.login.2004!'),
             ]
         );
 
-        // Create cashier user or update if exists
+        // 2. Create Admin Account
         User::updateOrCreate(
-            ['role' => 'cashier'],
+            ['email' => 'adminapms@gmail.com'],
             [
-                'name' => 'Cashier User',
-                'email' => 'cashier@apms.local',
+                'name' => 'Admin APMS',
+                'role' => 'admin',
+                'phone' => '08123456789',
+                'password' => bcrypt('adminapms!2004120825'),
+            ]
+        );
+
+        // 3. Create Cashier Account
+        User::updateOrCreate(
+            ['email' => 'chasierapms@gmail.com'],
+            [
+                'name' => 'Cashier APMS',
+                'role' => 'cashier',
                 'phone' => '08198765432',
-                'password' => bcrypt('cashier!120825'),
+                'password' => bcrypt('chasierpms!2004120825'),
             ]
         );
 

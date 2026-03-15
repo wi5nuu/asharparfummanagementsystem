@@ -11,19 +11,69 @@ use App\Models\Expense;
 use App\Models\TransactionDetail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Services\SmartInsightService;
 
 class DashboardController extends Controller
 {
-    public function index()
+    protected $insightService;
+
+    public function __construct(SmartInsightService $insightService)
     {
+        $this->insightService = $insightService;
+    }
+
+    public function index(Request $request)
+    {
+        $period = $request->get('period', 'this_month');
         $today = Carbon::today();
+        
+        // Define range based on period
+        switch ($period) {
+            case 'today':
+                $startDate = Carbon::today();
+                $endDate = Carbon::today()->endOfDay();
+                $periodLabel = 'Hari Ini';
+                break;
+            case 'this_week':
+                $startDate = Carbon::now()->startOfWeek();
+                $endDate = Carbon::now()->endOfWeek();
+                $periodLabel = 'Minggu Ini';
+                break;
+            case 'this_year':
+                $startDate = Carbon::now()->startOfYear();
+                $endDate = Carbon::now()->endOfYear();
+                $periodLabel = 'Tahun Ini';
+                break;
+            case 'this_month':
+            default:
+                $startDate = Carbon::now()->startOfMonth();
+                $endDate = Carbon::now()->endOfMonth();
+                $periodLabel = 'Bulan Ini';
+                break;
+        }
+
         $month = Carbon::now()->month;
         $year = Carbon::now()->year;
         
-        // 1. Statistik Penjualan & Produk
+        // 1. Statistik Penjualan & Produk (Eceran)
         $todaySales = Transaction::whereDate('created_at', $today)->sum('total_amount') ?? 0;
-        $monthSales = Transaction::whereMonth('created_at', $month)
+        $periodSales = Transaction::whereBetween('created_at', [$startDate, $endDate])->sum('total_amount') ?? 0;
+        
+        // Backward compatibility for existing view variables if needed, though we should transition to period-based
+        $monthSales = Transaction::whereMonth('created_at', $month)->whereYear('created_at', $year)->sum('total_amount') ?? 0;
+
+        // 1b. Statistik Penjualan (Grosir)
+        $wholesaleSalesToday = \App\Models\WholesaleOrder::whereDate('created_at', $today)
+            ->where('status', '!=', 'cancelled')
+            ->sum('total_amount') ?? 0;
+            
+        $wholesaleSalesPeriod = \App\Models\WholesaleOrder::whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', '!=', 'cancelled')
+            ->sum('total_amount') ?? 0;
+        
+        $wholesaleSalesMonth = \App\Models\WholesaleOrder::whereMonth('created_at', $month)
             ->whereYear('created_at', $year)
+            ->where('status', '!=', 'cancelled')
             ->sum('total_amount') ?? 0;
         
         $totalProducts = Product::count();
@@ -34,11 +84,6 @@ class DashboardController extends Controller
             ->whereColumn('current_stock', '<=', 'minimum_stock')
             ->count() ?? 0;
         
-        $outOfStockProductsCount = DB::table('inventories')
-            ->where('current_stock', '<=', 0)
-            ->count() ?? 0;
-        
-        // Detailed alerts for dashboard display
         $lowStockAlerts = DB::table('inventories')
             ->join('products', 'inventories.product_id', '=', 'products.id')
             ->select('products.name', 'inventories.current_stock', 'inventories.minimum_stock')
@@ -55,27 +100,25 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
         
-        // 4. Pengeluaran & Profit RIIL
-        $monthExpenses = Expense::whereMonth('date', $month)
-            ->whereYear('date', $year)
-            ->sum('amount') ?? 0;
+        // 4. Pengeluaran & Profit RIIL based on Period
+        $periodExpenses = Expense::whereBetween('date', [$startDate, $endDate])->sum('amount') ?? 0;
+        $monthExpenses = Expense::whereMonth('date', $month)->whereYear('date', $year)->sum('amount') ?? 0;
         
-        // Calculate COGS (HPP) for the month
-        $monthCOGS = TransactionDetail::join('transactions', 'transaction_details.transaction_id', '=', 'transactions.id')
-            ->whereMonth('transactions.created_at', $month)
-            ->whereYear('transactions.created_at', $year)
+        // Calculate COGS (HPP) for the range
+        $periodCOGS = TransactionDetail::join('transactions', 'transaction_details.transaction_id', '=', 'transactions.id')
+            ->whereBetween('transactions.created_at', [$startDate, $endDate])
             ->select(DB::raw('SUM(transaction_details.purchase_price * transaction_details.quantity) as total_cogs'))
             ->first()->total_cogs ?? 0;
             
-        $grossProfit = $monthSales - $monthCOGS;
-        $profit = $grossProfit - $monthExpenses; // Net Profit
+        $periodGrossProfit = $periodSales - $periodCOGS;
+        $periodProfit = $periodGrossProfit - $periodExpenses; // Net Profit for period
         
-        // 5. Data Grafik (Optimized to single query)
+        // 5. Data Grafik
         $salesData = cache()->remember('dashboard_sales_data.' . $year, 3600, function() use ($year) {
             return $this->getMonthlySalesData($year);
         });
         
-        // 6. Top Selling (Disesuaikan agar tidak error kolom selling_price)
+        // 6. Top Selling
         $topProducts = cache()->remember('dashboard_top_products.' . $month, 3600, function() use ($month) {
             return DB::table('transaction_details')
                 ->join('products', 'transaction_details.product_id', '=', 'products.id')
@@ -93,33 +136,54 @@ class DashboardController extends Controller
             ->where('status', 'open')
             ->first();
             
+        // Generate Smart Insights
+        $smartInsights = $this->insightService->generateInsights();
+            
         return view('dashboard.index', compact(
-            'todaySales', 'monthSales', 'totalProducts', 'lowStockProductsCount',
-            'outOfStockProductsCount', 'totalCustomers', 'recentTransactions',
-            'topProducts', 'monthExpenses', 'profit', 'salesData',
-            'lowStockAlerts', 'expiringAlerts', 'monthCOGS', 'grossProfit',
-            'activeShift'
+            'todaySales', 'periodSales', 'periodLabel', 'period', 'totalProducts', 'lowStockProductsCount',
+            'totalCustomers', 'recentTransactions', 'topProducts', 'periodExpenses', 'periodProfit', 
+            'salesData', 'lowStockAlerts', 'expiringAlerts', 'periodCOGS', 'periodGrossProfit',
+            'activeShift', 'wholesaleSalesToday', 'wholesaleSalesPeriod', 
+            // Keep month for backward compatibility if needed, or update view
+            'monthSales', 'wholesaleSalesMonth', 'monthExpenses', 'smartInsights'
         ));
     }
     
-    public function getStats()
+    public function getStats(Request $request)
     {
-        $todaySales = Transaction::whereDate('created_at', Carbon::today())->sum('total_amount');
-        $monthSales = Transaction::whereMonth('created_at', Carbon::now()->month)
-            ->whereYear('created_at', Carbon::now()->year)
-            ->sum('total_amount');
+        $period = $request->get('period', 'this_month');
         
-        $monthExpenses = Expense::whereMonth('date', Carbon::now()->month)
-            ->whereYear('date', Carbon::now()->year)
-            ->sum('amount') ?? 0;
+        switch ($period) {
+            case 'today':
+                $startDate = Carbon::today();
+                $endDate = Carbon::today()->endOfDay();
+                break;
+            case 'this_week':
+                $startDate = Carbon::now()->startOfWeek();
+                $endDate = Carbon::now()->endOfWeek();
+                break;
+            case 'this_year':
+                $startDate = Carbon::now()->startOfYear();
+                $endDate = Carbon::now()->endOfYear();
+                break;
+            case 'this_month':
+            default:
+                $startDate = Carbon::now()->startOfMonth();
+                $endDate = Carbon::now()->endOfMonth();
+                break;
+        }
+
+        $todaySales = Transaction::whereDate('created_at', Carbon::today())->sum('total_amount');
+        $periodSales = Transaction::whereBetween('created_at', [$startDate, $endDate])->sum('total_amount');
+        
+        $periodExpenses = Expense::whereBetween('date', [$startDate, $endDate])->sum('amount') ?? 0;
             
-        $monthCOGS = TransactionDetail::join('transactions', 'transaction_details.transaction_id', '=', 'transactions.id')
-            ->whereMonth('transactions.created_at', Carbon::now()->month)
-            ->whereYear('transactions.created_at', Carbon::now()->year)
+        $periodCOGS = TransactionDetail::join('transactions', 'transaction_details.transaction_id', '=', 'transactions.id')
+            ->whereBetween('transactions.created_at', [$startDate, $endDate])
             ->select(DB::raw('SUM(transaction_details.purchase_price * transaction_details.quantity) as total_cogs'))
             ->first()->total_cogs ?? 0;
             
-        $netProfit = $monthSales - $monthCOGS - $monthExpenses;
+        $netProfit = $periodSales - $periodCOGS - $periodExpenses;
         
         $lowStockCount = DB::table('inventories')
             ->whereColumn('current_stock', '<=', 'minimum_stock')
@@ -128,12 +192,24 @@ class DashboardController extends Controller
             
         $totalCustomers = Customer::count();
 
+        $wholesaleToday = \App\Models\WholesaleOrder::whereDate('created_at', Carbon::today())
+            ->where('status', '!=', 'cancelled')
+            ->sum('total_amount') ?? 0;
+            
+        $wholesalePeriod = \App\Models\WholesaleOrder::whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', '!=', 'cancelled')
+            ->sum('total_amount') ?? 0;
+
         return response()->json([
             'todaySales' => 'Rp ' . number_format($todaySales, 0, ',', '.'),
-            'monthSales' => 'Rp ' . number_format($monthSales, 0, ',', '.'),
+            'periodSales' => 'Rp ' . number_format($periodSales, 0, ',', '.'),
+            'wholesaleToday' => 'Rp ' . number_format($wholesaleToday, 0, ',', '.'),
+            'wholesalePeriod' => 'Rp ' . number_format($wholesalePeriod, 0, ',', '.'),
+            'periodExpenses' => 'Rp ' . number_format($periodExpenses, 0, ',', '.'),
             'netProfit' => 'Rp ' . number_format($netProfit, 0, ',', '.'),
             'lowStockCount' => $lowStockCount,
-            'totalCustomers' => $totalCustomers
+            'totalCustomers' => $totalCustomers,
+            'smartInsights' => $this->insightService->generateInsights()
         ]);
     }
 

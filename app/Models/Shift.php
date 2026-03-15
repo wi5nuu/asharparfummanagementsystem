@@ -12,10 +12,12 @@ class Shift extends Model
         'end_time',
         'initial_cash',
         'expected_cash',
-        'actual_cash',
         'discrepancy',
         'status',
         'notes',
+        'closing_photo_path',
+        'photo_status',
+        'photo_reviewed_by',
     ];
 
     protected $casts = [
@@ -30,5 +32,10 @@ class Shift extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function reviewer()
+    {
+        return $this->belongsTo(User::class, 'photo_reviewed_by');
     }
 }

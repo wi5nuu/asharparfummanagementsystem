@@ -12,21 +12,23 @@
                 <div class="card-header">
                     <h3 class="card-title">Kategori Produk</h3>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        @foreach($categories as $category)
-                        <div class="col-md-2 mb-2">
-                            <button class="btn btn-block btn-category" 
-                                    data-category="{{ $category->id }}"
-                                    style="background-color: {{ $category->color }}; color: white;">
-                                {{ $category->name }}
-                            </button>
-                        </div>
-                        @endforeach
-                        <div class="col-md-2 mb-2">
-                            <button class="btn btn-block btn-secondary" id="showAllProducts">
-                                Semua
-                            </button>
+                <div class="card-body p-2">
+                    <div class="category-scroll-wrapper">
+                        <div class="d-flex flex-nowrap" style="overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 10px;">
+                            <div class="mr-2">
+                                <button class="btn btn-secondary shadow-sm" id="showAllProducts" style="min-width: 80px;">
+                                    Semua
+                                </button>
+                            </div>
+                            @foreach($categories as $category)
+                            <div class="mr-2">
+                                <button class="btn btn-category shadow-sm" 
+                                        data-category="{{ $category->id }}"
+                                        style="background-color: {{ $category->color }}; color: white; min-width: 100px;">
+                                    {{ $category->name }}
+                                </button>
+                            </div>
+                            @endforeach
                         </div>
                     </div>
                 </div>
@@ -56,7 +58,7 @@
                             $currentStock = $inventory ? $inventory->current_stock : 0;
                             $disabled = $currentStock == 0;
                         @endphp
-                        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3 product-item" 
+                        <div class="col-6 col-sm-6 col-md-4 col-lg-3 col-xl-2 mb-3 product-item" 
                              data-id="{{ $product->id }}"
                              data-category="{{ $product->category_id }}"
                              data-name="{{ $product->name }}"
@@ -64,9 +66,8 @@
                              data-wholesale="{{ $product->wholesale_price }}"
                              data-stock="{{ $currentStock }}"
                              data-barcode="{{ $product->barcode }}">
-                            <div class="card product-card {{ $disabled ? 'bg-light' : '' }}"
-                                 style="user-select: none; cursor: pointer;"
-                                 onclick="{{ !$disabled ? 'addToCart(' . $product->id . ')' : '' }}">
+                            <div class="card product-card {{ $disabled ? 'bg-light disabled-product' : '' }}"
+                                 style="user-select: none; cursor: pointer;">
                                 <div class="card-body text-center p-2">
                                     @if($product->image)
                                     <img src="{{ asset('storage/' . $product->image) }}" 
@@ -238,7 +239,10 @@
                     
                     <div class="row mb-2">
                         <div class="col-6">
-                            <strong>PPN (10%)</strong>
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="taxEnabled" checked>
+                                <label class="custom-control-label font-weight-bold" for="taxEnabled">PPN (10%)</label>
+                            </div>
                         </div>
                         <div class="col-6 text-right">
                             <span id="tax">Rp 0</span>
@@ -266,19 +270,33 @@
                         <small class="text-muted">Tentukan apakah detail bonus muncul di struk pelanggan.</small>
                     </div>
                     
-                    <!-- Payment Method -->
                     <div class="form-group">
                         <label>Metode Pembayaran</label>
-                        <div class="input-group btn-group-toggle w-100" data-toggle="buttons">
+                        <div class="input-group btn-group-toggle w-100 mb-2" data-toggle="buttons">
                             <label class="btn btn-outline-primary active">
-                                <input type="radio" name="payment_method" value="cash" checked onchange="autoFillPayment()"> Cash
+                                <input type="radio" name="payment_method" value="cash" checked onchange="handlePaymentMethodChange()"> Cash
                             </label>
                             <label class="btn btn-outline-primary">
-                                <input type="radio" name="payment_method" value="qris" onchange="autoFillPayment()"> QRIS
+                                <input type="radio" name="payment_method" value="qris" onchange="handlePaymentMethodChange()"> QRIS
                             </label>
                             <label class="btn btn-outline-primary">
-                                <input type="radio" name="payment_method" value="transfer" onchange="autoFillPayment()"> Transfer
+                                <input type="radio" name="payment_method" value="ewallet" onchange="handlePaymentMethodChange()"> E-Wallet
                             </label>
+                            <label class="btn btn-outline-primary">
+                                <input type="radio" name="payment_method" value="transfer" onchange="handlePaymentMethodChange()"> Transfer
+                            </label>
+                        </div>
+                        
+                        <!-- E-Wallet Type Select -->
+                        <div id="ewalletTypeContainer" style="display: none;">
+                            <select id="ewalletType" class="form-control mb-2">
+                                <option value="">-- Pilih E-Wallet --</option>
+                                <option value="DANA">DANA</option>
+                                <option value="OVO">OVO</option>
+                                <option value="GOPAY">GoPay</option>
+                                <option value="SHOPEEPAY">ShopeePay</option>
+                                <option value="LINKAJA">LinkAja</option>
+                            </select>
                         </div>
                     </div>
                     
@@ -324,8 +342,8 @@
                         @endphp
                         @foreach($quickAmounts as $amount)
                         <div class="col-4 mb-1">
-                            <button class="btn btn-outline-secondary btn-sm btn-block" 
-                                    onclick="setPaidAmount({{ $amount }})">
+                            <button class="btn btn-outline-secondary btn-sm btn-block quick-amount-btn" 
+                                    data-amount="{{ $amount }}">
                                 {{ number_format($amount, 0, ',', '.') }}
                             </button>
                         </div>
@@ -419,32 +437,50 @@
     transform: translateY(-3px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
-.product-card.bg-light {
+.product-card.disabled-product {
     cursor: not-allowed;
     opacity: 0.6;
 }
 .product-name {
-    font-size: 0.85rem;
-    height: 2.5rem;
+    font-size: 0.8rem;
+    height: 2.2rem;
+    line-height: 1.1;
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
 }
 .product-price {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
 }
 .product-img-mini {
     flex-shrink: 0;
 }
-#cartTable tbody tr {
-    border-bottom: 1px solid #dee2e6;
+#cartTable {
+    font-size: 0.85rem;
 }
-#cartTable tbody tr:last-child {
-    border-bottom: none;
+#cartTable th, #cartTable td {
+    padding: 0.5rem 0.25rem;
 }
-.btn-category.active {
-    box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.5);
+.category-scroll-wrapper::-webkit-scrollbar {
+    height: 4px;
+}
+.category-scroll-wrapper::-webkit-scrollbar-thumb {
+    background: #FF6B35;
+    border-radius: 10px;
+}
+@media (max-width: 576px) {
+    .product-item {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+    .card-title {
+        font-size: 1rem;
+    }
+    .btn-lg {
+        font-size: 1rem;
+        padding: 0.5rem;
+    }
 }
 </style>
 @endpush
@@ -571,12 +607,22 @@ $(document).ready(function() {
         });
     });
     
-    // Calculate totals on input change
-    $('#discount, #paidAmount').on('input', calculateTotals);
-    $('#discountType').change(calculateTotals);
-    
+    // Product selection via data attributes
+    $(document).on('click', '.product-item .product-card:not(.disabled-product)', function() {
+        const productId = $(this).closest('.product-item').data('id');
+        addToCart(productId);
+    });
+
+    // Quick amount selection
+    $(document).on('click', '.quick-amount-btn', function() {
+        const amount = $(this).data('amount');
+        setPaidAmount(amount);
+    });
+
     // Barcode scanner simulation
     $(document).keypress(function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        
         if (e.which === 13) { // Enter key
             const barcode = $('#productSearch').val();
             if (barcode.length >= 8) {
@@ -835,6 +881,21 @@ function updateCartPrices() {
     updateCartDisplay();
 }
 
+function handlePaymentMethodChange() {
+    const method = $('input[name="payment_method"]:checked').val();
+    if (method === 'ewallet') {
+        $('#ewalletTypeContainer').slideDown();
+    } else {
+        $('#ewalletTypeContainer').slideUp();
+        $('#ewalletType').val('');
+    }
+    autoFillPayment();
+}
+
+$(document).on('change', '#taxEnabled', function() {
+    calculateTotals();
+});
+
 function calculateTotals() {
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const discountInput = $('#discount').val();
@@ -847,7 +908,8 @@ function calculateTotals() {
         discountValue = parseFloat(discountInput) || 0;
     }
     
-    const tax = Math.round((subtotal - discountValue) * 0.1); // 10% PPN
+    const taxEnabled = $('#taxEnabled').is(':checked');
+    const tax = taxEnabled ? Math.round((subtotal - discountValue) * 0.1) : 0; // 10% PPN
     const total = Math.max(0, subtotal - discountValue + tax);
     
     $('#tax').text('Rp ' + tax.toLocaleString('id-ID'));
@@ -992,7 +1054,9 @@ function submitTransaction(total, paid) {
             discount_amount: discountAmount,
             discount_type: discountType,
             discount_percent: discountPercent,
+            tax_enabled: $('#taxEnabled').is(':checked'),
             payment_method: $('input[name="payment_method"]:checked').val(),
+            ewallet_type: $('#ewalletType').val() || null,
             paid_amount: paid,
             notes: $('#transactionNotes').val(),
             _token: '{{ csrf_token() }}'

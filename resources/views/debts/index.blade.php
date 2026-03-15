@@ -15,32 +15,35 @@
                         <table class="table table-bordered table-striped">
                             <thead>
                                 <tr>
-                                    <th>#</th>
-                                    <th>No. Invoice</th>
-                                    <th>Pelanggan</th>
-                                    <th>Tanggal Transaksi</th>
-                                    <th>Total Tagihan</th>
-                                    <th>Telah Dibayar</th>
-                                    <th>Sisa Hutang</th>
-                                    <th>Status</th>
-                                    <th>Aksi</th>
+                                    <th class="d-none d-md-table-cell text-nowrap">#</th>
+                                    <th class="text-nowrap">Invoice & Pelanggan</th>
+                                    <th class="d-none d-lg-table-cell text-nowrap">Tanggal</th>
+                                    <th class="d-none d-sm-table-cell text-nowrap">Tagihan</th>
+                                    <th class="d-none d-md-table-cell text-nowrap">Dibayar</th>
+                                    <th class="text-nowrap">Sisa Hutang</th>
+                                    <th class="text-nowrap text-center">Status</th>
+                                    <th class="text-nowrap">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($transactions as $trx)
                                 <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td><span class="badge badge-info">{{ $trx->invoice_number }}</span></td>
+                                    <td class="d-none d-md-table-cell">{{ $loop->iteration }}</td>
                                     <td>
-                                        <strong>{{ $trx->customer->name ?? 'Umum' }}</strong><br>
-                                        <small>{{ $trx->customer->phone ?? '' }}</small>
+                                        <div class="font-weight-bold truncate-text">{{ $trx->invoice_number }}</div>
+                                        <div class="text-xs-mobile text-muted">
+                                            {{ $trx->customer->name ?? 'Umum' }}
+                                        </div>
+                                        <div class="d-lg-none text-xs-mobile text-muted">
+                                            {{ $trx->created_at->format('d/m/y') }}
+                                        </div>
                                     </td>
-                                    <td>{{ $trx->created_at->format('d/m/Y') }}</td>
-                                    <td>Rp {{ number_format($trx->final_amount, 0, ',', '.') }}</td>
-                                    <td>Rp {{ number_format($trx->paid_amount, 0, ',', '.') }}</td>
-                                    <td><span class="text-danger font-weight-bold">Rp {{ number_format($trx->debt_amount, 0, ',', '.') }}</span></td>
-                                    <td>
-                                        <span class="badge badge-{{ $trx->payment_status == 'partial' ? 'warning' : 'danger' }}">
+                                    <td class="d-none d-lg-table-cell text-nowrap">{{ $trx->created_at->format('d/m/Y') }}</td>
+                                    <td class="d-none d-sm-table-cell text-nowrap">Rp {{ number_format($trx->final_amount, 0, ',', '.') }}</td>
+                                    <td class="d-none d-md-table-cell text-nowrap">Rp {{ number_format($trx->paid_amount, 0, ',', '.') }}</td>
+                                    <td class="text-nowrap"><span class="text-danger font-weight-bold">Rp {{ number_format($trx->debt_amount, 0, ',', '.') }}</span></td>
+                                    <td class="text-center">
+                                        <span class="badge badge-{{ $trx->payment_status == 'partial' ? 'warning' : 'danger' }} text-xs-mobile">
                                             {{ $trx->payment_status == 'partial' ? 'Cicil' : 'Hutang' }}
                                         </span>
                                     </td>
@@ -110,9 +113,8 @@
                                 @endforelse
                             </tbody>
                         </table>
-                        <div class="mt-3">
-                            {{ $transactions->links() }}
-                        </div>
+                    <div class="mt-4">
+                        {{ $transactions->links() }}
                     </div>
                 </div>
             </div>

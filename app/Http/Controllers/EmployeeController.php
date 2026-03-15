@@ -9,7 +9,7 @@ class EmployeeController extends Controller
 {
     public function index()
     {
-        $employees = User::where('role', '!=', 'admin')->get();
+        $employees = User::where('role', '!=', 'admin')->latest()->paginate(10);
         return view('employees.index', compact('employees'));
     }
 
@@ -24,7 +24,7 @@ class EmployeeController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
             'phone' => 'nullable|string',
-            'role' => 'required|in:cashier,manager,supervisor',
+            'role' => 'required|in:cashier,manager,supervisor,packing,admin',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
@@ -50,7 +50,7 @@ class EmployeeController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $employee->id,
             'phone' => 'nullable|string',
-            'role' => 'required|in:cashier,manager,supervisor',
+            'role' => 'required|in:cashier,manager,supervisor,packing,admin',
         ]);
 
         $employee->update($validated);

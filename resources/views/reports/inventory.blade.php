@@ -18,8 +18,8 @@
                     <h5 class="text-warning"><i class="fas fa-exclamation-triangle mr-1"></i>Stok Rendah</h5>
                     <div class="table-responsive mb-4">
                         <table class="table table-hover table-sm">
-                            <thead class="thead-warning">
-                                <tr><th>Produk</th><th>Stok Saat Ini</th><th>Stok Minimum</th></tr>
+                            <thead class="bg-light text-nowrap">
+                                <tr><th>Produk</th><th>Stok</th><th class="d-none d-sm-table-cell">Minimal</th></tr>
                             </thead>
                             <tbody>
                                 @forelse($lowStock as $item)
@@ -39,8 +39,8 @@
                     <h5 class="text-danger"><i class="fas fa-times-circle mr-1"></i>Stok Habis</h5>
                     <div class="table-responsive mb-4">
                         <table class="table table-hover table-sm">
-                            <thead class="thead-danger">
-                                <tr><th>Produk</th><th>Stok Saat Ini</th></tr>
+                            <thead class="bg-light text-nowrap">
+                                <tr><th>Produk</th><th>Status</th></tr>
                             </thead>
                             <tbody>
                                 @forelse($outOfStock as $item)
@@ -59,15 +59,18 @@
                     <h5 class="text-info"><i class="fas fa-calendar-times mr-1"></i>Akan Kadaluarsa (30 hari)</h5>
                     <div class="table-responsive">
                         <table class="table table-hover table-sm">
-                            <thead class="thead-info">
-                                <tr><th>Produk</th><th>Tanggal Kadaluarsa</th><th>Stok</th></tr>
+                            <thead class="bg-light text-nowrap">
+                                <tr><th>Produk</th><th>Expired</th><th class="d-none d-sm-table-cell">Stok</th></tr>
                             </thead>
                             <tbody>
                                 @forelse($expiringSoon as $item)
                                 <tr>
-                                    <td>{{ $item->name }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($item->expiration_date)->format('d M Y') }}</td>
-                                    <td>{{ $item->current_stock }}</td>
+                                    <td>
+                                        <div class="font-weight-bold truncate-text">{{ $item->name }}</div>
+                                        <div class="d-sm-none text-xs-mobile text-muted">Stok: {{ $item->current_stock }}</div>
+                                    </td>
+                                    <td><span class="text-nowrap">{{ \Carbon\Carbon::parse($item->expiration_date)->format('d/m/y') }}</span></td>
+                                    <td class="d-none d-sm-table-cell">{{ $item->current_stock }}</td>
                                 </tr>
                                 @empty
                                 <tr><td colspan="3" class="text-center text-muted">Tidak ada produk yang akan kadaluarsa.</td></tr>

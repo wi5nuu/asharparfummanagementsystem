@@ -27,6 +27,8 @@ class Transaction extends Model
         'coupon_id',
         'payment_proof_image',
         'notes',
+        'ewallet_type',
+        'tax_enabled',
     ];
 
     protected $casts = [
@@ -50,5 +52,10 @@ class Transaction extends Model
     public function details()
     {
         return $this->hasMany(TransactionDetail::class);
+    }
+
+    public function coupon()
+    {
+        return $this->belongsTo(Coupon::class);
     }
 }

@@ -11,8 +11,9 @@ use App\Models\Inventory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
-use PDF;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class TransactionController extends Controller
 {
@@ -89,8 +90,9 @@ class TransactionController extends Controller
             $discountType = $validated['discount_type'] ?? 'fixed';
             $discountPercent = $validated['discount_percent'] ?? 0;
             
+            $taxEnabled = $validated['tax_enabled'] ?? true;
             $taxableAmount = $subtotal - $discount;
-            $tax = round($taxableAmount * 0.10); // 10% PPN
+            $tax = $taxEnabled ? round($taxableAmount * 0.10) : 0; // 10% PPN if enabled
             
             $total = $taxableAmount + $tax;
             $paid = $validated['paid_amount'];
@@ -99,7 +101,7 @@ class TransactionController extends Controller
             // Handle coupon
             $coupon = null;
             if ($validated['coupon_code'] ?? false) {
-                $coupon = Coupon::where('code', $validated['coupon_code'])
+                $coupon = \App\Models\Coupon::where('code', $validated['coupon_code'])
                     ->where('is_active', true)
                     ->where('expiration_date', '>=', now())
                     ->first();
@@ -138,7 +140,9 @@ class TransactionController extends Controller
                 'debt_amount' => $debtAmount,
                 'notes' => $validated['notes'] ?? null,
                 'coupon_id' => $coupon?->id,
-                'user_id' => auth()->id()
+                'user_id' => \Illuminate\Support\Facades\Auth::id(),
+                'ewallet_type' => $validated['ewallet_type'] ?? null,
+                'tax_enabled' => $taxEnabled
             ]);
             
             // Create transaction details and update inventory

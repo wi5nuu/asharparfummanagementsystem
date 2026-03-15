@@ -8,7 +8,7 @@ use App\Models\Product;
 use App\Models\Expense;
 use App\Models\Customer;
 use Carbon\Carbon;
-use PDF;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
@@ -116,20 +116,20 @@ class ReportController extends Controller
     
     public function inventory()
     {
-        $lowStock = \DB::table('inventories')
+        $lowStock = DB::table('inventories')
             ->join('products', 'inventories.product_id', '=', 'products.id')
             ->whereColumn('inventories.current_stock', '<', 'inventories.minimum_stock')
             ->where('inventories.current_stock', '>', 0)
             ->select('products.name', 'inventories.*')
             ->get();
         
-        $outOfStock = \DB::table('inventories')
+        $outOfStock = DB::table('inventories')
             ->join('products', 'inventories.product_id', '=', 'products.id')
             ->where('inventories.current_stock', 0)
             ->select('products.name', 'inventories.*')
             ->get();
         
-        $expiringSoon = \DB::table('inventories')
+        $expiringSoon = DB::table('inventories')
             ->join('products', 'inventories.product_id', '=', 'products.id')
             ->whereNotNull('inventories.expiration_date')
             ->where('inventories.expiration_date', '<=', Carbon::now()->addDays(30))
@@ -177,15 +177,51 @@ class ReportController extends Controller
     
     public function exportSales(Request $request)
     {
-        $startDate = $request->get('start_date', Carbon::now()->startOfMonth());
-        $endDate = $request->get('end_date', Carbon::now()->endOfMonth());
-        
+        $period = $request->get('period', 'this_month');
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+
+        if ($period !== 'custom') {
+            switch ($period) {
+                case 'today':
+                    $startDate = Carbon::today();
+                    $endDate = Carbon::today()->endOfDay();
+                    break;
+                case 'yesterday':
+                    $startDate = Carbon::yesterday();
+                    $endDate = Carbon::yesterday()->endOfDay();
+                    break;
+                case 'this_week':
+                    $startDate = Carbon::now()->startOfWeek();
+                    $endDate = Carbon::now()->endOfWeek();
+                    break;
+                case 'last_week':
+                    $startDate = Carbon::now()->subWeek()->startOfWeek();
+                    $endDate = Carbon::now()->subWeek()->endOfWeek();
+                    break;
+                case 'this_month':
+                    $startDate = Carbon::now()->startOfMonth();
+                    $endDate = Carbon::now()->endOfMonth();
+                    break;
+                case 'last_month':
+                    $startDate = Carbon::now()->subMonth()->startOfMonth();
+                    $endDate = Carbon::now()->subMonth()->endOfMonth();
+                    break;
+            }
+        } else {
+            $startDate = Carbon::parse($startDate)->startOfDay();
+            $endDate = Carbon::parse($endDate)->endOfDay();
+        }
+
         $sales = Transaction::whereBetween('created_at', [$startDate, $endDate])
             ->with(['customer', 'user'])
+            ->orderBy('created_at', 'desc')
             ->get();
         
-        $pdf = PDF::loadView('reports.exports.sales-pdf', compact('sales', 'startDate', 'endDate'));
-        return $pdf->download('sales-report-' . date('Y-m-d') . '.pdf');
+        $totalSales = $sales->sum('total_amount');
+        
+        $pdf = Pdf::loadView('reports.exports.sales-pdf', compact('sales', 'startDate', 'endDate', 'period', 'totalSales'));
+        return $pdf->stream('sales-report-' . $period . '-' . date('Y-m-d') . '.pdf');
     }
     
     public function customerAnalytics()
@@ -206,5 +242,39 @@ class ReportController extends Controller
             ->get();
         
         return view('reports.customers', compact('topCustomers', 'customerGrowth', 'customerTypes'));
+    }
+
+    public function exportLowStock()
+    {
+        $lowStock = DB::table('inventories')
+            ->join('products', 'inventories.product_id', '=', 'products.id')
+            ->whereColumn('inventories.current_stock', '<', 'inventories.minimum_stock')
+            ->where('inventories.current_stock', '>', 0)
+            ->select('products.name', 'inventories.*')
+            ->get();
+            
+        $pdf = Pdf::loadView('reports.exports.inventory-pdf', [
+            'items' => $lowStock,
+            'title' => 'Laporan Stok Rendah',
+            'type' => 'low_stock'
+        ]);
+        return $pdf->stream('low-stock-report-' . date('Y-m-d') . '.pdf');
+    }
+
+    public function exportExpiry()
+    {
+        $expiringSoon = DB::table('inventories')
+            ->join('products', 'inventories.product_id', '=', 'products.id')
+            ->whereNotNull('inventories.expiration_date')
+            ->where('inventories.expiration_date', '<=', Carbon::now()->addDays(30))
+            ->select('products.name', 'inventories.*')
+            ->get();
+            
+        $pdf = Pdf::loadView('reports.exports.inventory-pdf', [
+            'items' => $expiringSoon,
+            'title' => 'Laporan Produk Akan Kadaluarsa',
+            'type' => 'expiry'
+        ]);
+        return $pdf->stream('expiry-report-' . date('Y-m-d') . '.pdf');
     }
 }

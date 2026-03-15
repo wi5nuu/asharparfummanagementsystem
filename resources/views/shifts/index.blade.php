@@ -64,15 +64,16 @@
                     <div class="table-responsive">
                         <table class="table table-bordered table-striped">
                             <thead>
-                                <tr>
+                                <tr class="text-nowrap">
                                     <th>#</th>
                                     <th>Kasir</th>
                                     <th>Waktu Shift</th>
                                     <th>Modal Awal</th>
-                                    <th>Uang Masuk (Sesuai Sistem)</th>
-                                    <th>Uang Fisik (Closing)</th>
+                                    <th>Uang Masuk</th>
+                                    <th>Uang Fisik</th>
                                     <th>Selisih</th>
-                                    <th>Status</th>
+                                    <th>Status Kerja</th>
+                                    <th>Status Foto</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -118,6 +119,22 @@
                                         <span class="badge badge-{{ $shift->status == 'open' ? 'success' : 'secondary' }}">
                                             {{ strtoupper($shift->status) }}
                                         </span>
+                                    </td>
+                                    <td>
+                                        @if($shift->status == 'open')
+                                            <span class="text-muted">-</span>
+                                        @else
+                                            @if($shift->photo_status == 'pending')
+                                                <span class="badge badge-warning text-dark"><i class="fas fa-clock mr-1"></i> Menunggu ACC</span>
+                                            @elseif($shift->photo_status == 'approved')
+                                                <span class="badge badge-success"><i class="fas fa-check mr-1"></i> Di-ACC</span>
+                                            @elseif($shift->photo_status == 'rejected')
+                                                <span class="badge badge-danger"><i class="fas fa-times mr-1"></i> Ditolak</span>
+                                            @endif
+                                            <div class="mt-1">
+                                                <a href="{{ route('shifts.show', $shift->id) }}" class="btn btn-xs btn-outline-info">Lihat Detail</a>
+                                            </div>
+                                        @endif
                                     </td>
                                 </tr>
                                 @endforeach
@@ -171,7 +188,7 @@
                 <h5 class="modal-title text-white">Tutup Shift (Closing Kasir)</h5>
                 <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
             </div>
-            <form action="{{ route('shifts.update', $activeShift->id) }}" method="POST">
+            <form action="{{ route('shifts.update', $activeShift->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 <div class="modal-body">
@@ -187,7 +204,15 @@
                         <small class="text-muted">Hitung semua uang tunai (kertas & koin) yang ada di laci kasir.</small>
                     </div>
                     <div class="form-group">
-                        <label>Catatan Closing</label>
+                        <label>Foto Bukti Buku Catatan Manual (Wajib) *</label>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="closing_photo" name="closing_photo" accept="image/png, image/jpeg, image/jpg" required>
+                            <label class="custom-file-label" for="closing_photo">Pilih Foto...</label>
+                        </div>
+                        <small class="text-danger mt-1 d-block"><i class="fas fa-exclamation-triangle"></i> Maksimal ukuran: 1 MB (Untuk hemat memori server tahunan).</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Catatan Tambahan (Opsional)</label>
                         <textarea name="notes" class="form-control" rows="2" placeholder="Contoh: Ada selisih Rp 500 karena tidak ada kembalian koin"></textarea>
                     </div>
                 </div>

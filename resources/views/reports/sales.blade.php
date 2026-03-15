@@ -61,14 +61,13 @@
                     <div class="table-responsive">
                         <table class="table table-hover table-striped">
                             <thead class="thead-dark">
-                                <tr>
+                                <tr class="text-nowrap">
                                     @if($type === 'daily')
                                     <th>Tanggal</th>
                                     @else
-                                    <th>Bulan</th>
-                                    <th>Tahun</th>
+                                    <th>Bulan/Tahun</th>
                                     @endif
-                                    <th>Jumlah Transaksi</th>
+                                    <th>Trx</th>
                                     <th>Total Penjualan</th>
                                 </tr>
                             </thead>
@@ -76,10 +75,9 @@
                                 @forelse($sales as $item)
                                 <tr>
                                     @if($type === 'daily')
-                                    <td>{{ \Carbon\Carbon::parse($item->date)->format('d M Y') }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($item->date)->format('d/m/y') }}</td>
                                     @else
-                                    <td>{{ \Carbon\Carbon::create()->month($item->month)->format('F') }}</td>
-                                    <td>{{ $item->year }}</td>
+                                    <td>{{ \Carbon\Carbon::create()->month($item->month)->format('M') }} {{ $item->year }}</td>
                                     @endif
                                     <td>{{ $item->transaction_count }}</td>
                                     <td>Rp {{ number_format($item->total_sales, 0, ',', '.') }}</td>

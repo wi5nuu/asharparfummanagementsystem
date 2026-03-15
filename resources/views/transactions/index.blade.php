@@ -8,16 +8,18 @@
         <div class="col-12">
             <div class="card card-apms">
                 <div class="card-header">
-                    <h3 class="card-title">Daftar Transaksi</h3>
-                    <div class="card-tools">
-                        <div class="input-group input-group-sm" style="width: 280px;">
-                            <input type="text" id="dateRange" class="form-control float-right" 
-                                   placeholder="Filter tanggal" 
-                                   value="{{ request('start_date') ? request('start_date') . ' - ' . request('end_date') : '' }}">
-                            <div class="input-group-append" style="cursor: pointer" onclick="$('#dateRange').click()">
-                                <button class="btn btn-default">
-                                    <i class="fas fa-calendar"></i>
-                                </button>
+                    <div class="d-sm-flex justify-content-between align-items-center">
+                        <h3 class="card-title mb-2 mb-sm-0">Daftar Transaksi</h3>
+                        <div class="card-tools">
+                            <div class="input-group input-group-sm" style="max-width: 100%; width: 250px;">
+                                <input type="text" id="dateRange" class="form-control float-right" 
+                                       placeholder="Filter tanggal" 
+                                       value="{{ request('start_date') ? request('start_date') . ' - ' . request('end_date') : '' }}">
+                                <div class="input-group-append" style="cursor: pointer" onclick="$('#dateRange').click()">
+                                    <button class="btn btn-default">
+                                        <i class="fas fa-calendar"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -45,38 +47,52 @@
                         <table class="table table-hover" id="transactionsTable">
                             <thead>
                                 <tr>
-                                    <th>Invoice</th>
-                                    <th>Tanggal</th>
-                                    <th>Pelanggan</th>
-                                    <th>Tipe</th>
-                                    <th>Total</th>
-                                    <th>Pembayaran</th>
-                                    <th>Kasir</th>
-                                    <th>Aksi</th>
+                                    <th class="text-nowrap">Invoice</th>
+                                    <th class="d-none d-md-table-cell text-nowrap">Tanggal</th>
+                                    <th class="text-nowrap">Pelanggan</th>
+                                    <th class="d-none d-sm-table-cell text-nowrap">Tipe</th>
+                                    <th class="text-nowrap">Total</th>
+                                    <th class="d-none d-lg-table-cell text-nowrap">Pembayaran</th>
+                                    <th class="d-none d-xl-table-cell text-nowrap">Kasir</th>
+                                    <th class="text-nowrap">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($transactions as $transaction)
                                 <tr>
                                     <td>
-                                        <a href="{{ route('transactions.show', $transaction->id) }}">
-                                            {{ $transaction->invoice_number }}
-                                        </a>
+                                        <div class="font-weight-bold truncate-text">
+                                            <a href="{{ route('transactions.show', $transaction->id) }}">
+                                                #{{ $transaction->invoice_number }}
+                                            </a>
+                                        </div>
+                                        <div class="d-md-none text-xs-mobile text-muted">
+                                            {{ $transaction->created_at->format('d/m/y H:i') }}
+                                        </div>
                                     </td>
-                                    <td>{{ $transaction->created_at->format('d/m/Y H:i') }}</td>
-                                    <td>{{ $transaction->customer->name ?? 'Umum' }}</td>
+                                    <td class="d-none d-md-table-cell">{{ $transaction->created_at->format('d/m/Y H:i') }}</td>
                                     <td>
+                                        <div class="font-weight-bold truncate-text">{{ $transaction->customer->name ?? 'Umum' }}</div>
+                                        <div class="d-sm-none text-xs-mobile text-muted">
+                                            {{ $transaction->customer_type == 'wholesale' ? 'Grosir' : 'Retail' }} | {{ strtoupper($transaction->payment_method) }}
+                                        </div>
+                                    </td>
+                                    <td class="d-none d-sm-table-cell">
                                         @if($transaction->customer_type == 'wholesale')
                                             <span class="badge badge-info">Grosir</span>
                                         @else
                                             <span class="badge badge-secondary">Retail</span>
                                         @endif
                                     </td>
-                                    <td>Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}</td>
                                     <td>
+                                        <div class="font-weight-bold text-success">
+                                            Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}
+                                        </div>
+                                    </td>
+                                    <td class="d-none d-lg-table-cell">
                                         <span class="badge badge-light">{{ strtoupper($transaction->payment_method) }}</span>
                                     </td>
-                                    <td>{{ $transaction->user->name }}</td>
+                                    <td class="d-none d-xl-table-cell text-muted smaller">{{ $transaction->user->name }}</td>
                                     <td>
                                         <div class="btn-group">
                                             <a href="{{ route('transactions.show', $transaction->id) }}" 

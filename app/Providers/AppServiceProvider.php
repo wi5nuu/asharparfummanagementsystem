@@ -4,6 +4,11 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Auth\Events\Login;
+use App\Listeners\RecordLoginAttendance;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,41 +27,64 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useBootstrapFour();
 
+        // Register event listener for Cashier attendance
+        Event::listen(
+            Login::class,
+            [RecordLoginAttendance::class, 'handle']
+        );
+
+        // Share urgent wholesale notifications with all views
+        view()->composer('layouts.app', function ($view) {
+            $urgentOrders = [];
+            if (Auth::check()) {
+                $urgentOrders = \App\Models\WholesaleOrder::where('status', 'pending')
+                    ->where('packing_days', 1)
+                    ->get();
+            }
+            $view->with('urgentWholesaleOrders', $urgentOrders);
+        });
+
+        // Share settings globally
+        view()->composer('*', function ($view) {
+            $settings = \App\Models\Setting::pluck('value', 'key');
+            $view->with('app_settings', $settings);
+        });
+
         // Define gates for different user roles
-        \Illuminate\Support\Facades\Gate::define('manage_products', function ($user) {
-            return in_array($user->role, ['admin', 'manager']);
+        Gate::define('manage_products', function ($user) {
+            return in_array($user->role, ['admin', 'manager', 'owner']);
         });
 
-        \Illuminate\Support\Facades\Gate::define('manage_inventory', function ($user) {
-            return in_array($user->role, ['admin', 'manager']);
+        Gate::define('manage_inventory', function ($user) {
+            return in_array($user->role, ['admin', 'manager', 'owner']);
         });
 
-        \Illuminate\Support\Facades\Gate::define('manage_transactions', function ($user) {
-            return in_array($user->role, ['admin', 'cashier', 'manager']);
+        Gate::define('manage_transactions', function ($user) {
+            return in_array($user->role, ['admin', 'cashier', 'manager', 'owner']);
         });
 
-        \Illuminate\Support\Facades\Gate::define('manage_customers', function ($user) {
-            return in_array($user->role, ['admin', 'manager', 'cashier']);
+        Gate::define('manage_customers', function ($user) {
+            return in_array($user->role, ['admin', 'manager', 'cashier', 'owner']);
         });
 
-        \Illuminate\Support\Facades\Gate::define('manage_coupons', function ($user) {
-            return in_array($user->role, ['admin', 'manager']);
+        Gate::define('manage_coupons', function ($user) {
+            return in_array($user->role, ['admin', 'manager', 'owner']);
         });
 
-        \Illuminate\Support\Facades\Gate::define('manage_expenses', function ($user) {
-            return in_array($user->role, ['admin', 'manager']);
+        Gate::define('manage_expenses', function ($user) {
+            return in_array($user->role, ['admin', 'manager', 'owner']);
         });
 
-        \Illuminate\Support\Facades\Gate::define('view_reports', function ($user) {
-            return in_array($user->role, ['admin', 'manager']);
+        Gate::define('view_reports', function ($user) {
+            return in_array($user->role, ['admin', 'manager', 'owner']);
         });
 
-        \Illuminate\Support\Facades\Gate::define('manage_employees', function ($user) {
-            return $user->role === 'admin';
+        Gate::define('manage_employees', function ($user) {
+            return in_array($user->role, ['admin', 'owner']);
         });
 
-        \Illuminate\Support\Facades\Gate::define('manage_settings', function ($user) {
-            return $user->role === 'admin';
+        Gate::define('manage_settings', function ($user) {
+            return in_array($user->role, ['admin', 'owner']);
         });
     }
 }

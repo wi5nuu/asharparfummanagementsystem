@@ -32,26 +32,36 @@
                         <table class="table table-bordered table-striped">
                             <thead>
                                 <tr>
-                                    <th>#</th>
-                                    <th>Tanggal</th>
-                                    <th>Kategori</th>
-                                    <th>Deskripsi</th>
-                                    <th>Vendor</th>
-                                    <th>Jumlah (Rp)</th>
-                                    <th>Bukti</th>
-                                    <th>Aksi</th>
+                                    <th class="d-none d-md-table-cell text-nowrap">#</th>
+                                    <th class="text-nowrap">Tanggal</th>
+                                    <th class="d-none d-sm-table-cell text-nowrap">Kategori</th>
+                                    <th class="text-nowrap">Deskripsi</th>
+                                    <th class="d-none d-lg-table-cell text-nowrap">Vendor</th>
+                                    <th class="text-nowrap">Jumlah (Rp)</th>
+                                    <th class="d-none d-lg-table-cell text-nowrap">Bukti</th>
+                                    <th class="text-nowrap">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($expenses as $expense)
                                 <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($expense->date)->format('d/m/Y') }}</td>
-                                    <td><span class="badge badge-info">{{ $expense->category->name }}</span></td>
-                                    <td>{{ $expense->description }}</td>
-                                    <td>{{ $expense->vendor ?? '-' }}</td>
-                                    <td class="text-right font-weight-bold">{{ number_format($expense->amount, 0, ',', '.') }}</td>
+                                    <td class="d-none d-md-table-cell">{{ $loop->iteration }}</td>
+                                    <td class="text-nowrap">
+                                        <div class="font-weight-bold">{{ \Carbon\Carbon::parse($expense->date)->format('d/m/Y') }}</div>
+                                        <div class="d-sm-none text-xs-mobile text-muted">
+                                            {{ $expense->category->name }}
+                                        </div>
+                                    </td>
+                                    <td class="d-none d-sm-table-cell"><span class="badge badge-info">{{ $expense->category->name }}</span></td>
                                     <td>
+                                        <div class="truncate-text font-weight-bold">{{ $expense->description }}</div>
+                                        <div class="d-lg-none text-xs-mobile text-muted">
+                                            V: {{ $expense->vendor ?? '-' }}
+                                        </div>
+                                    </td>
+                                    <td class="d-none d-lg-table-cell">{{ $expense->vendor ?? '-' }}</td>
+                                    <td class="text-right font-weight-bold text-nowrap">Rp {{ number_format($expense->amount, 0, ',', '.') }}</td>
+                                    <td class="d-none d-lg-table-cell">
                                         @if($expense->proof_image)
                                             <a href="{{ asset('storage/' . $expense->proof_image) }}" target="_blank" class="btn btn-xs btn-default">
                                                 <i class="fas fa-image"></i> Lihat

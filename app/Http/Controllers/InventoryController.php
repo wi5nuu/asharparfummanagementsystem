@@ -13,7 +13,7 @@ class InventoryController extends Controller
 public function index()
 {
     // Gunakan eager loading 'product' di semua query agar ringan di view
-    $inventories = Inventory::with('product')->get();
+    $inventories = Inventory::with('product')->latest()->paginate(20);
 
     // 2. Filter stok rendah 
     $lowStock = Inventory::with('product')

@@ -72,7 +72,7 @@
                     <h5>Rincian Pengeluaran</h5>
                     <div class="table-responsive">
                         <table class="table table-hover">
-                            <thead class="thead-dark">
+                            <thead class="bg-light text-nowrap">
                                 <tr><th>Kategori</th><th>Total</th></tr>
                             </thead>
                             <tbody>
@@ -92,7 +92,7 @@
                     <h5 class="mt-4">Pemasukan per Metode Pembayaran</h5>
                     <div class="table-responsive">
                         <table class="table table-hover">
-                            <thead class="thead-dark">
+                            <thead class="bg-light text-nowrap">
                                 <tr><th>Metode</th><th>Total</th></tr>
                             </thead>
                             <tbody>
