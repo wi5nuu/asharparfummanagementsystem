@@ -11,13 +11,17 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
   
   <style>
-    body { font-family: 'Outfit', sans-serif !important; }
+    body { 
+        font-family: 'Outfit', sans-serif !important; 
+        margin: 0;
+        padding: 0;
+    }
     .login-page {
-        background: radial-gradient(circle at top right, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        background: #ffffff;
         height: 100vh;
         display: flex;
-        align-items: center;
-        justify-content: center;
+        align-items: stretch;
+        justify-content: flex-start;
         overflow: hidden;
     }
   </style>

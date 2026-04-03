@@ -76,6 +76,9 @@ class DashboardController extends Controller
             ->where('status', '!=', 'cancelled')
             ->sum('total_amount') ?? 0;
         
+        // 1c. Total Combined Revenue (Retail + Wholesale)
+        $totalCombinedRevenue = $periodSales + $wholesaleSalesPeriod;
+        
         $totalProducts = Product::count();
         $totalCustomers = Customer::count();
         
@@ -100,6 +103,18 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
         
+        // 3b. Pesanan Grosir Status Summary
+        $wholesaleSummary = \App\Models\WholesaleOrder::select('status', DB::raw('count(*) as total'))
+            ->groupBy('status')
+            ->pluck('total', 'status')
+            ->all();
+
+        // 3c. Staf Aktif (Checked-in today, no time_out)
+        $activeStaff = \App\Models\Attendance::whereDate('date', $today)
+            ->where('status', 'present')
+            ->whereNull('time_out')
+            ->get();
+        
         // 4. Pengeluaran & Profit RIIL based on Period
         $periodExpenses = Expense::whereBetween('date', [$startDate, $endDate])->sum('amount') ?? 0;
         $monthExpenses = Expense::whereMonth('date', $month)->whereYear('date', $year)->sum('amount') ?? 0;
@@ -110,7 +125,7 @@ class DashboardController extends Controller
             ->select(DB::raw('SUM(transaction_details.purchase_price * transaction_details.quantity) as total_cogs'))
             ->first()->total_cogs ?? 0;
             
-        $periodGrossProfit = $periodSales - $periodCOGS;
+        $periodGrossProfit = $totalCombinedRevenue - $periodCOGS;
         $periodProfit = $periodGrossProfit - $periodExpenses; // Net Profit for period
         
         // 5. Data Grafik
@@ -145,7 +160,8 @@ class DashboardController extends Controller
             'salesData', 'lowStockAlerts', 'expiringAlerts', 'periodCOGS', 'periodGrossProfit',
             'activeShift', 'wholesaleSalesToday', 'wholesaleSalesPeriod', 
             // Keep month for backward compatibility if needed, or update view
-            'monthSales', 'wholesaleSalesMonth', 'monthExpenses', 'smartInsights'
+            'monthSales', 'wholesaleSalesMonth', 'monthExpenses', 'smartInsights',
+            'totalCombinedRevenue', 'activeStaff', 'wholesaleSummary'
         ));
     }
     

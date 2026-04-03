@@ -27,10 +27,14 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useBootstrapFour();
 
-        // Register event listener for Cashier attendance
+        // Register event listeners for Login events
         Event::listen(
             Login::class,
-            [RecordLoginAttendance::class, 'handle']
+            [\App\Listeners\RecordLoginAttendance::class, 'handle']
+        );
+        Event::listen(
+            Login::class,
+            [\App\Listeners\RecordLoginActivity::class, 'handle']
         );
 
         // Share urgent wholesale notifications with all views

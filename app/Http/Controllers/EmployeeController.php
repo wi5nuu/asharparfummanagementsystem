@@ -9,7 +9,9 @@ class EmployeeController extends Controller
 {
     public function index()
     {
-        $employees = User::where('role', '!=', 'admin')->latest()->paginate(10);
+        // Hide only the 'owner' role from the employee list. 
+        // Admin, Cashier, etc. should remain visible for management purposes.
+        $employees = User::where('role', '!=', 'owner')->latest()->paginate(10);
         return view('employees.index', compact('employees'));
     }
 
@@ -22,13 +24,20 @@ class EmployeeController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'full_name' => 'nullable|string|max:255',
+            'nickname' => 'nullable|string|max:255',
+            'origin' => 'nullable|string|max:255',
             'email' => 'required|email|unique:users',
             'phone' => 'nullable|string',
             'role' => 'required|in:cashier,manager,supervisor,packing,admin',
             'password' => 'required|string|min:8|confirmed',
+            'skills' => 'nullable|string',
+            'is_staying_in_mess' => 'nullable|boolean',
+            'living_address' => 'nullable|string',
         ]);
 
         $validated['password'] = bcrypt($validated['password']);
+        $validated['is_staying_in_mess'] = $request->boolean('is_staying_in_mess');
         User::create($validated);
 
         return redirect()->route('employees.index')->with('success', 'Karyawan berhasil ditambahkan');
@@ -48,11 +57,18 @@ class EmployeeController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'full_name' => 'nullable|string|max:255',
+            'nickname' => 'nullable|string|max:255',
+            'origin' => 'nullable|string|max:255',
             'email' => 'required|email|unique:users,email,' . $employee->id,
             'phone' => 'nullable|string',
             'role' => 'required|in:cashier,manager,supervisor,packing,admin',
+            'skills' => 'nullable|string',
+            'is_staying_in_mess' => 'nullable|boolean',
+            'living_address' => 'nullable|string',
         ]);
 
+        $validated['is_staying_in_mess'] = $request->boolean('is_staying_in_mess');
         $employee->update($validated);
         return redirect()->route('employees.index')->with('success', 'Karyawan berhasil diperbarui');
     }

@@ -90,8 +90,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('attendances', [\App\Http\Controllers\AttendanceController::class, 'store'])->name('attendances.store');
     Route::post('attendances/{attendance}/checkout', [\App\Http\Controllers\AttendanceController::class, 'checkout'])->name('attendances.checkout');
     Route::get('attendances', [\App\Http\Controllers\AttendanceController::class, 'index'])->name('attendances.index');
-    Route::post('attendances/employees', [\App\Http\Controllers\AttendanceController::class, 'addEmployee'])->name('attendances.add-employee');
-    Route::delete('attendances/employees/{user}', [\App\Http\Controllers\AttendanceController::class, 'removeEmployee'])->name('attendances.remove-employee');
 
     // Wholesale Management (Grosir)
     Route::get('/wholesale/create', [\App\Http\Controllers\WholesaleController::class, 'create'])->name('wholesale.create');
@@ -101,6 +99,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/wholesale/{order}/confirm', [\App\Http\Controllers\WholesaleController::class, 'confirm'])->name('wholesale.confirm');
     Route::post('/wholesale/{order}/ready', [\App\Http\Controllers\WholesaleController::class, 'markReady'])->name('wholesale.ready');
     Route::get('/wholesale/{order}/print', [\App\Http\Controllers\WholesaleController::class, 'print'])->name('wholesale.print');
+
+    // APMS Copilot (Offline AI Assistant)
+    Route::post('/ai/chat', [\App\Http\Controllers\OfflineAiController::class, 'chat'])->name('ai.chat');
 });
 
 // API Routes

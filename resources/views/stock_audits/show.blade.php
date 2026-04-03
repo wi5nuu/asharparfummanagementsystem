@@ -8,9 +8,14 @@
         <div class="col-md-12">
             <div class="card card-apms">
                 <div class="card-header">
-                    <h3 class="card-title">Audit Stok #{{ $stockAudit->id }} ({{ $stockAudit->audit_date->format('d/m/Y') }})</h3>
+                    <div class="d-flex align-items-center">
+                        <a href="{{ route('stock_audits.index') }}" class="btn btn-outline-secondary btn-sm mr-3">
+                            <i class="fas fa-arrow-left"></i> Kembali
+                        </a>
+                        <h3 class="card-title mb-0 font-weight-bold">Audit Stok #{{ $stockAudit->id }} <span class="text-muted text-sm ml-2">({{ $stockAudit->audit_date->format('d/m/Y') }})</span></h3>
+                    </div>
                     <div class="card-tools">
-                        <span class="badge badge-{{ $stockAudit->status == 'draft' ? 'warning' : 'success' }} px-3 py-2">
+                        <span class="badge badge-{{ $stockAudit->status == 'draft' ? 'warning' : 'success' }} px-3 py-2 text-sm shadow-sm">
                             {{ $stockAudit->status == 'draft' ? 'Dalam Proses' : 'Selesai' }}
                         </span>
                     </div>

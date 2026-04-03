@@ -12,15 +12,7 @@
             min-height: 80px !important;
         }
         .info-box-mini .info-box-icon {
-            width: 35px !important;
-            height: 35px !important;
-            line-height: 35px !important;
-            font-size: 1rem !important;
-            margin: 0 auto 5px !important;
-            border-radius: 50% !important;
-            display: flex !important;
-            align-items: center;
-            justify-content: center;
+            display: none !important;
         }
         .info-box-mini .info-box-content {
             padding: 0 !important;
@@ -42,7 +34,7 @@
 @endpush
 
 @section('content')
-<div class="container-fluid">
+<div class="container-fluid p-0 p-md-2">
     <!-- Mandatory Attendance Modal -->
     @if(session('needs_attendance'))
     <div class="modal fade" id="attendanceModal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog">
@@ -76,241 +68,191 @@
     </div>
     @endif
 
-    <!-- Active Shift Alert (Premium Style) -->
-    <div class="row">
-        <div class="col-12">
-            @if($activeShift)
-            <div class="card card-apms mb-3 border-left-success" style="border-left-width: 4px !important;">
-                <div class="card-body py-2 px-3">
-                    <div class="d-flex align-items-center">
-                        <div class="bg-faint-success rounded-circle p-2 mr-3 text-success d-none d-sm-block">
-                            <i class="fas fa-cash-register"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <h6 class="mb-0 font-weight-bold text-dark">Shift Kasir Aktif</h6>
-                            <p class="mb-0 text-muted smaller">Mulai: {{ $activeShift->start_time->format('d M/H:i') }} | Modal: Rp {{ number_format($activeShift->initial_cash, 0, ',', '.') }}</p>
-                        </div>
-                        <div class="ml-auto">
-                            <a href="{{ route('shifts.index') }}" class="btn btn-outline-danger btn-sm font-weight-bold">
-                                <i class="fas fa-times-circle mr-1"></i> Tutup Shift
-                            </a>
+    <!-- LEVEL 0: Strategic Command (Combined Highlights) -->
+    <div class="row no-gutters m-0 p-0 row-mobile-tight mb-3">
+        <div class="col-12 col-md-12 p-0 p-md-1">
+            <div class="card card-apms border-0 bg-gradient-dark text-white shadow-lg overflow-hidden position-relative" style="background: linear-gradient(135deg, #0b1727 0%, #1a5ab3 100%);">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-uppercase font-weight-bold mb-0 smaller text-white-50" style="letter-spacing: 0.1rem;">Total Omzet Gabungan (Eceran + Grosir)</p>
+                        <h3 class="font-weight-bold mb-0 text-white display-5">Rp {{ number_format($totalCombinedRevenue, 0, ',', '.') }}</h3>
+                        <span class="smaller text-white-50"><i class="fas fa-calendar-alt mr-1"></i> Data Periode: {{ $periodLabel }}</span>
+                    </div>
+                    <div class="d-none d-lg-block text-right">
+                        <div class="badge badge-wholesale px-3 py-2 text-uppercase" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2);">
+                            Command Center Mode: Active
                         </div>
                     </div>
                 </div>
+                <!-- Subtle Icon Background -->
+                <i class="fas fa-chart-line position-absolute" style="right: -20px; bottom: -20px; font-size: 8rem; opacity: 0.05; transform: rotate(-15deg);"></i>
             </div>
-            @else
-            <div class="card card-apms mb-3 border-left-warning" style="border-left-width: 4px !important;">
-                <div class="card-body py-2 px-3">
-                    <div class="d-flex align-items-center">
-                        <div class="bg-faint-warning rounded-circle p-2 mr-3 text-warning d-none d-sm-block">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <h6 class="mb-0 font-weight-bold text-dark">Shift Belum Dibuka</h6>
-                            <p class="mb-0 text-muted smaller">Buka shift kasir untuk mulai transaksi POS.</p>
-                        </div>
-                        <div class="ml-auto">
-                            <a href="{{ route('shifts.index') }}" class="btn btn-primary-apms btn-sm shadow-none">
-                                <i class="fas fa-play-circle mr-1"></i> Buka Sekarang
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            @endif
         </div>
     </div>
 
-    <!-- Period Filter Row -->
-    <div class="row mb-3">
-        <div class="col-12">
-            <div class="card card-apms border-0 shadow-sm">
-                <div class="card-body p-2 p-sm-3">
-                    <form action="{{ route('dashboard') }}" method="GET" id="periodFilterForm">
-                        <div class="d-flex flex-column flex-sm-row align-items-sm-center">
-                            <label class="mr-sm-3 mb-2 mb-sm-0 font-weight-bold text-muted text-sm"><i class="fas fa-filter mr-1"></i> Filter Statistik Utama:</label>
-                            <select name="period" class="form-control form-control-sm h-auto py-2" style="width: 100%; max-width: 300px;" onchange="document.getElementById('periodFilterForm').submit()">
-                                <option value="today" {{ $period == 'today' ? 'selected' : '' }}>Harian (Hari Ini)</option>
-                                <option value="this_week" {{ $period == 'this_week' ? 'selected' : '' }}>Mingguan (Minggu Ini)</option>
-                                <option value="this_month" {{ $period == 'this_month' ? 'selected' : '' }}>Bulanan ({{ date('F') }})</option>
-                                <option value="this_year" {{ $period == 'this_year' ? 'selected' : '' }}>Tahunan ({{ date('Y') }})</option>
-                            </select>
-                        </div>
-                    </form>
+    <!-- LEVEL 1: Executive KPI Strip (Ultra Compact) -->
+    <div class="row no-gutters m-0 p-0 row-mobile-tight">
+        <div class="col-6 col-md-3 p-0 p-md-1">
+            <div class="card card-apms border-left-primary shadow-sm overflow-hidden mb-1 mb-md-3" style="border-left-width: 3px !important;">
+                <div class="card-body p-2 p-md-3 px-2">
+                    <p class="text-uppercase text-muted font-weight-bold mb-0 smaller text-truncate" style="letter-spacing: 0.02rem;">Eceran</p>
+                    <h6 class="font-weight-bold mb-0 text-dark text-truncate">Rp {{ number_format($periodSales, 0, ',', '.') }}</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 p-0 p-md-1">
+            <div class="card card-apms border-left-success shadow-sm overflow-hidden mb-1 mb-md-3" style="border-left-width: 3px !important;">
+                <div class="card-body p-2 p-md-3 px-2">
+                    <p class="text-uppercase text-muted font-weight-bold mb-0 smaller text-truncate" style="letter-spacing: 0.02rem;">Grosir</p>
+                    <h6 class="font-weight-bold mb-0 text-dark text-truncate">Rp {{ number_format($wholesaleSalesPeriod, 0, ',', '.') }}</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 p-0 p-md-1">
+            <div class="card card-apms border-left-info shadow-sm overflow-hidden mb-1 mb-md-3" style="border-left-width: 3px !important;">
+                <div class="card-body p-2 p-md-3 px-2">
+                    <p class="text-uppercase text-muted font-weight-bold mb-0 smaller text-truncate" style="letter-spacing: 0.02rem;">Est Profit</p>
+                    <h6 class="font-weight-bold mb-0 text-success text-truncate">Rp {{ number_format($periodProfit, 0, ',', '.') }}</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 p-0 p-md-1">
+            <div class="card card-apms border-left-warning shadow-sm overflow-hidden mb-1 mb-md-3" style="border-left-width: 3px !important;">
+                <div class="card-body p-2 p-md-3 px-2">
+                    <p class="text-uppercase text-muted font-weight-bold mb-0 smaller text-truncate" style="letter-spacing: 0.02rem;">Pengeluaran</p>
+                    <h6 class="font-weight-bold mb-0 text-danger text-truncate">Rp {{ number_format($periodExpenses, 0, ',', '.') }}</h6>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Section: Operational Insights -->
-    <div class="d-flex align-items-center mb-3 mt-2">
-        <h6 class="text-uppercase text-muted font-weight-bold mb-0" style="font-size: 0.75rem; letter-spacing: 0.05rem;">Sintesis Operasional</h6>
-        <div class="flex-grow-1 ml-3 border-bottom" style="opacity: 0.1;"></div>
-    </div>
-
-    <!-- Smart AI Insights Section (Falcon Card) -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card card-apms border-0 overflow-hidden">
-                <div class="card-header bg-faint-primary py-2 px-3 border-0">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-magic text-primary-apms mr-2"></i>
-                        <h6 class="mb-0 font-weight-bold text-primary-apms" style="font-size: 0.8rem;">Smart Insights AI Logic</h6>
-                    </div>
-                </div>
-                <div class="card-body py-3 px-3">
-                    
-                    <div class="row" id="smartInsightsContainer">
-                        @forelse($smartInsights ?? [] as $insight)
-                        <div class="col-md-6 col-lg-3 mb-2 mb-lg-0">
-                            <div class="d-flex align-items-start p-2 rounded border">
-                                <i class="fas {{ $insight['icon'] }} {{ $insight['color'] }} mt-1 mr-2"></i>
-                                <div>
-                                    <small class="text-muted d-block font-weight-bold" style="text-transform: uppercase; font-size: 0.65rem;">{{ $insight['title'] }}</small>
-                                    <p class="mb-0 text-sm" style="line-height: 1.2;">{!! $insight['text'] !!}</p>
-                                </div>
-                            </div>
-                        </div>
-                        @empty
-                        <div class="col-12 text-center py-2">
-                            <p class="text-muted mb-0 small">Menganalisis data... Tambahkan lebih banyak transaksi untuk mendapatkan insight cerdas!</p>
-                        </div>
-                        @endforelse
-                    </div>
-                </div>
+    <!-- LEVEL 2: Combined Ultra-Compact Command Center (One-Line Mastery) -->
+    @if(in_array(auth()->user()->role, ['admin', 'cashier', 'supervisor']))
+    <div class="row no-gutters mb-1 mx-0 row-mobile-tight bg-white border shadow-sm align-items-center">
+        <!-- Part 1: Quick Stats (Low Stock, Customer, Period) -->
+        <div class="col-7 col-md-7 d-flex align-items-center px-1 border-right" style="height: 30px;">
+            <div class="d-flex align-items-center mr-auto">
+                <span class="font-weight-bold text-muted mr-1" style="font-size: 0.55rem;">S:</span>
+                <span class="font-weight-bold text-dark" style="font-size: 0.55rem;">{{ $lowStockProductsCount }}</span>
             </div>
-        </div>
-    </div>
-
-    <!-- Section: Financial Analytics -->
-    <div class="d-flex align-items-center mb-3 mt-4">
-        <h6 class="text-uppercase text-muted font-weight-bold mb-0" style="font-size: 0.75rem; letter-spacing: 0.05rem;">Analitik Finansial</h6>
-        <div class="flex-grow-1 ml-3 border-bottom" style="opacity: 0.1;"></div>
-    </div>
-
-    <!-- Quick Stats Row (Falcon Cards) -->
-    <div class="row px-1 px-sm-2 mb-3">
-        <div class="col-4 col-sm-6 col-md-3 px-1 mb-2">
-            <div class="card card-apms h-100 border-left-primary">
-                <div class="card-body p-2 p-sm-3">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <h6 class="text-uppercase text-muted font-weight-bold mb-0" style="font-size: 0.65rem; letter-spacing: 0.05rem;">Eceran Aktif</h6>
-                        <span class="badge badge-wholesale smaller">POS</span>
-                    </div>
-                    <div class="d-flex align-items-end flex-wrap">
-                        <h5 class="font-weight-bold mb-0 mr-2 text-dark" id="todaySalesText" style="font-size: 0.95rem;">Rp {{ number_format($todaySales, 0, ',', '.') }}</h5>
-                    </div>
-                </div>
+            <div class="d-flex align-items-center border-left border-right px-1 mx-1">
+                <span class="font-weight-bold text-muted mr-1" style="font-size: 0.55rem;">C:</span>
+                <span class="font-weight-bold text-dark" style="font-size: 0.55rem;">{{ $totalCustomers }}</span>
+            </div>
+            <div class="d-flex align-items-center ml-auto">
+                <span class="font-weight-bold text-muted d-none d-sm-inline" style="font-size: 0.55rem;">P:</span>
+                <span class="font-weight-bold text-dark text-uppercase text-truncate" style="max-width: 45px; font-size: 0.55rem;">{{ $period }}</span>
             </div>
         </div>
 
-        <div class="col-4 col-sm-6 col-md-3 px-1 mb-2">
-            <div class="card card-apms h-100 mb-0 border-0">
-                <div class="card-body p-2 p-sm-3">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <h6 class="text-uppercase text-muted font-weight-bold mb-0" style="font-size: 0.65rem; letter-spacing: 0.05rem;">Grosir Aktif</h6>
-                        <span class="badge badge-premium smaller">Bulk</span>
-                    </div>
-                    <div class="d-flex align-items-end flex-wrap">
-                        <h5 class="font-weight-bold mb-0 mr-2 text-dark" id="wholesaleTodayText" style="font-size: 0.95rem;">Rp {{ number_format($wholesaleSalesToday, 0, ',', '.') }}</h5>
-                    </div>
-                </div>
+        <!-- Part 2: Filter & POS Action -->
+        <div class="col-5 col-md-5 d-flex align-items-center p-0" style="height: 30px;">
+            <!-- Filter Dropdown -->
+            <div class="flex-grow-1 px-1 border-right">
+                <form action="{{ route('dashboard') }}" method="GET" id="periodFilterForm" class="m-0">
+                    <select name="period" class="form-control form-control-sm border-0 bg-transparent font-weight-bold p-0 h-auto text-primary" style="font-size: 0.65rem;" onchange="document.getElementById('periodFilterForm').submit()">
+                        <option value="today" {{ $period == 'today' ? 'selected' : '' }}>Harian</option>
+                        <option value="this_week" {{ $period == 'this_week' ? 'selected' : '' }}>Mingguan</option>
+                        <option value="this_month" {{ $period == 'this_month' ? 'selected' : '' }}>Bulanan</option>
+                        <option value="this_year" {{ $period == 'this_year' ? 'selected' : '' }}>Tahunan</option>
+                    </select>
+                </form>
             </div>
-        </div>
-        
-        <div class="col-4 col-sm-6 col-md-3 px-1 mb-2">
-            <div class="card card-apms h-100 mb-0 border-0">
-                <div class="card-body p-2 p-sm-3">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <h6 class="text-uppercase text-muted font-weight-bold mb-0" style="font-size: 0.65rem; letter-spacing: 0.05rem;">Rev Period</h6>
-                    </div>
-                    <div class="d-flex align-items-end flex-wrap">
-                        <h5 class="font-weight-bold mb-0 mr-2 text-primary-apms" id="periodSalesText" style="font-size: 0.95rem;">Rp {{ number_format($periodSales, 0, ',', '.') }}</h5>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-4 col-sm-6 col-md-3 px-1 mb-2">
-            <div class="card card-apms h-100 mb-0 border-0">
-                <div class="card-body p-2 p-sm-3">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <h6 class="text-uppercase text-muted font-weight-bold mb-0" style="font-size: 0.65rem; letter-spacing: 0.05rem;">Gro Period</h6>
-                    </div>
-                    <div class="d-flex align-items-end flex-wrap">
-                        <h5 class="font-weight-bold mb-0 mr-2 text-info" id="wholesalePeriodText" style="font-size: 0.95rem;">Rp {{ number_format($wholesaleSalesPeriod, 0, ',', '.') }}</h5>
-                    </div>
-                </div>
+            <!-- Shift Status Button -->
+            <div class="px-1">
+                @if($activeShift)
+                <a href="{{ route('shifts.index') }}" class="btn btn-outline-danger btn-xs py-0 px-1 font-weight-bold" style="font-size: 0.55rem; min-height: 18px; border-radius: 2px;">CLOSE</a>
+                @else
+                <a href="{{ route('shifts.index') }}" class="btn btn-primary-apms btn-xs py-0 px-1" style="font-size: 0.55rem; min-height: 18px; border-radius: 2px;">OPEN</a>
+                @endif
             </div>
         </div>
     </div>
-
-    <!-- Second Row for Other Stats -->
-    <div class="row mb-4">
-        <div class="col-4 px-1">
-            <div class="card card-apms border-0 mb-0">
-                <div class="card-body p-2 p-sm-3 text-center">
-                    <div class="text-warning mb-1"><i class="fas fa-box-open"></i></div>
-                    <div class="text-uppercase text-muted font-weight-bold" style="font-size: 0.6rem;">Low Stok</div>
-                    <div class="h6 mb-0 font-weight-bold text-dark" id="lowStockCountText">{{ $lowStockProductsCount }}</div>
-                </div>
-            </div>
+    @else
+    <!-- Period Filter Only for Owner/Others -->
+    <div class="bg-white border shadow-sm mb-1 px-2 py-1 row-mobile-tight row mx-0 no-gutters">
+        <div class="col-6 d-flex align-items-center">
+            <span class="font-weight-bold text-muted smaller mr-2">PERIODE LAPORAN:</span>
+            <span class="badge badge-primary-apms px-2">{{ $periodLabel }}</span>
         </div>
-        
-        <div class="col-4 px-1">
-            <div class="card card-apms border-0 mb-0">
-                <div class="card-body p-2 p-sm-3 text-center">
-                    <div class="text-teal mb-1"><i class="fas fa-users"></i></div>
-                    <div class="text-uppercase text-muted font-weight-bold" style="font-size: 0.6rem;">Customer</div>
-                    <div class="h6 mb-0 font-weight-bold text-dark" id="totalCustomersText">{{ $totalCustomers }}</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-4 px-1">
-            <div class="card card-apms border-0 mb-0">
-                <div class="card-body p-2 p-sm-3 text-center">
-                    <div class="text-indigo mb-1"><i class="fas fa-wallet"></i></div>
-                    <div class="text-uppercase text-muted font-weight-bold" style="font-size: 0.6rem;">Est Profit</div>
-                    <div class="h6 mb-0 font-weight-bold text-success" id="netProfitText">Rp {{ number_format($periodProfit, 0, ',', '.') }}</div>
-                </div>
-            </div>
+        <div class="col-6">
+            <form action="{{ route('dashboard') }}" method="GET" id="ownerPeriodFilterForm" class="m-0">
+                <select name="period" class="form-control form-control-sm border-0 font-weight-bold p-0 h-auto text-right" style="font-size: 0.7rem;" onchange="document.getElementById('ownerPeriodFilterForm').submit()">
+                    <option value="today" {{ $period == 'today' ? 'selected' : '' }}>Hari Ini</option>
+                    <option value="this_week" {{ $period == 'this_week' ? 'selected' : '' }}>Minggu Ini</option>
+                    <option value="this_month" {{ $period == 'this_month' ? 'selected' : '' }}>Bulan Ini</option>
+                    <option value="this_year" {{ $period == 'this_year' ? 'selected' : '' }}>Tahun Ini</option>
+                </select>
+            </form>
         </div>
     </div>
-    </div>
-    </div>
+    @endif
     
     <!-- Section: Activity & Reports -->
-    <div class="d-flex align-items-center mb-3 mt-4">
-        <h6 class="text-uppercase text-muted font-weight-bold mb-0" style="font-size: 0.75rem; letter-spacing: 0.05rem;">Aktivitas & Laporan Utama</h6>
-        <div class="flex-grow-1 ml-3 border-bottom" style="opacity: 0.1;"></div>
+    <div class="d-flex align-items-center mb-1 mt-1 px-2">
+        <h6 class="text-uppercase text-muted font-weight-bold mb-0" style="font-size: 0.6rem; letter-spacing: 0.05rem;">Aktivitas & Laporan Utama</h6>
+        <div class="flex-grow-1 ml-2 border-bottom" style="opacity: 0.05;"></div>
     </div>
     
     <!-- Main Content Row -->
-    <div class="row">
+    <div class="row row-mobile-tight m-md-0">
         <!-- Left Column -->
-        <div class="col-lg-8">
-            <!-- Sales Chart -->
-            <div class="card card-apms">
-                <div class="card-header border-0">
-                    <div class="d-flex justify-content-between">
-                        <h3 class="card-title">Grafik Penjualan Tahunan {{ date('Y') }}</h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-primary-apms btn-sm" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
-                            </button>
+        <div class="col-lg-8 col-mobile-tight">
+            <!-- Sales Chart Area and Side Panels -->
+            <div class="row m-0 p-0">
+                <div class="col-xl-8 pr-xl-3 col-mobile-tight">
+                    <!-- Sales Chart -->
+                    <div class="card card-apms border-0 shadow-sm card-mobile-flush h-100">
+                        <div class="card-header border-0 pb-0">
+                            <h3 class="card-title font-weight-bold" style="font-size: 0.9rem;">Grafik Penjualan {{ date('Y') }}</h3>
+                        </div>
+                        <div class="card-body pt-0 mobile-tight-p">
+                            <div class="position-relative" style="height: 300px;">
+                                <canvas id="salesChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="card-body">
-                    <div class="position-relative mb-4">
-                        <canvas id="salesChart" height="250"></canvas>
+                <div class="col-xl-4 mt-3 mt-xl-0">
+                    <!-- Ringkasan Keuangan (Moved here) -->
+                    <div class="card card-apms bg-gradient-primary text-white border-0 card-mobile-flush shadow-sm">
+                        <div class="card-header bg-transparent border-0 pb-0">
+                            <h3 class="card-title text-white" style="font-size: 0.8rem;">Ringkasan Keuangan {{ $periodLabel }}</h3>
+                        </div>
+                        <div class="card-body py-1 py-md-2">
+                            <div class="row text-center m-0">
+                                <div class="col-6 p-0 border-right border-white-50">
+                                    <small class="d-block opacity-75">Revenue</small>
+                                    <h6 class="font-weight-bold mb-0" id="summaryRevenueText">Rp {{ number_format($periodSales, 0, ',', '.') }}</h6>
+                                </div>
+                                <div class="col-6 p-0">
+                                    <small class="d-block opacity-75">Expense</small>
+                                    <h6 class="font-weight-bold mb-0" id="summaryExpenseText">Rp {{ number_format($periodExpenses, 0, ',', '.') }}</h6>
+                                </div>
+                            </div>
+                            <div class="border-top border-white-50 mt-1 pt-1 text-center">
+                                <small class="d-block opacity-75">Net Profit</small>
+                                <h6 class="font-weight-bold mb-0 text-warning" id="summaryProfitText">Rp {{ number_format($periodProfit, 0, ',', '.') }}</h6>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Distribusi Pembayaran (Moved here) -->
+                    <div class="card card-apms border-0 shadow-sm card-mobile-flush mt-3 mt-md-0">
+                        <div class="card-header border-0 pb-0">
+                            <h3 class="card-title" style="font-size: 0.8rem;">Distribusi Pembayaran</h3>
+                        </div>
+                        <div class="card-body pt-0">
+                            <div class="position-relative" id="paymentChartContainer" style="height: 140px;">
+                                <canvas id="paymentChart"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             
             <!-- Recent Transactions -->
-            <div class="card card-apms">
+            <div class="card card-apms shadow-sm card-mobile-flush mt-3">
                 <div class="card-header border-0">
                     <h3 class="card-title">Transaksi Terbaru</h3>
                     <div class="card-tools">
@@ -335,18 +277,18 @@
                             @foreach($recentTransactions as $transaction)
                             <tr>
                                 <td>
-                                    <a href="{{ route('transactions.show', $transaction->id) }}" class="text-primary">
-                                        {{ $transaction->invoice_number }}
+                                    <a href="{{ route('transactions.show', $transaction->id) }}" class="text-primary font-weight-bold" style="font-size: 0.75rem;">
+                                        #{{ substr($transaction->invoice_number, -6) }}
                                     </a>
                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <div class="avatar-circle avatar-sm bg-faint-primary mr-2">
+                                        <div class="avatar-circle avatar-sm bg-faint-primary mr-2" style="width: 20px; height: 20px; font-size: 0.6rem;">
                                             {{ strtoupper(substr($transaction->customer->name ?? 'U', 0, 1)) }}
                                         </div>
-                                        <div class="font-weight-bold truncate-text">{{ $transaction->customer->name ?? 'Umum' }}</div>
+                                        <div class="font-weight-bold truncate-text" style="max-width: 80px; font-size: 0.75rem;">{{ $transaction->customer->name ?? 'Umum' }}</div>
                                     </div>
-                                    <div class="d-sm-none text-xs-mobile text-muted">Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}</div>
+                                    <div class="d-sm-none text-muted" style="font-size: 0.65rem;">Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}</div>
                                 </td>
                                 <td class="d-none d-sm-table-cell">Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}</td>
                                 <td class="d-none d-md-table-cell">
@@ -377,6 +319,67 @@
         
         <!-- Right Column -->
         <div class="col-lg-4">
+            <!-- NEW: Live Personnel (Active Staff) -->
+            <div class="card card-apms shadow-sm border-0 mb-3 overflow-hidden">
+                <div class="card-header bg-faint-teal py-2 px-3 border-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-users-viewfinder text-teal mr-2"></i>
+                            <h6 class="mb-0 font-weight-bold text-teal" style="font-size: 0.8rem;">Personel Aktif Saat Ini</h6>
+                        </div>
+                        <span class="badge badge-pill bg-teal text-white">{{ count($activeStaff) }}</span>
+                    </div>
+                </div>
+                <div class="card-body p-2">
+                    <div class="d-flex flex-wrap">
+                        @forelse($activeStaff as $attendance)
+                            <div class="text-center mr-2 mb-2" title="{{ $attendance->user->name }} ({{ ucfirst($attendance->user->role) }})">
+                                <div class="avatar-circle avatar-md border {{ $attendance->user->role == 'admin' ? 'border-primary' : ($attendance->user->role == 'supervisor' ? 'border-success' : 'border-secondary') }}" style="border-width: 2px !important;">
+                                    {{ strtoupper(substr($attendance->user->name, 0, 1)) }}
+                                </div>
+                                <small class="d-block text-truncate mt-1" style="max-width: 50px; font-size: 0.6rem;">{{ explode(' ', $attendance->user->name)[0] }}</small>
+                            </div>
+                        @empty
+                            <div class="text-center py-3 w-100">
+                                <i class="fas fa-user-slash text-muted mb-2"></i>
+                                <p class="text-muted smaller mb-0">Belum ada staf yang masuk.</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEW: Wholesale Logistics Monitor -->
+            <div class="card card-apms shadow-sm border-0 mb-3">
+                <div class="card-header bg-faint-indigo py-2 px-3 border-0">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-truck-ramp-box text-indigo mr-2"></i>
+                        <h6 class="mb-0 font-weight-bold text-indigo" style="font-size: 0.8rem;">Monitor Logistik Grosir</h6>
+                    </div>
+                </div>
+                <div class="card-body p-2">
+                    <div class="row no-gutters text-center">
+                        <div class="col-4 border-right">
+                            <h5 class="font-weight-bold mb-0 text-warning">{{ $wholesaleSummary['pending'] ?? 0 }}</h5>
+                            <small class="text-muted text-uppercase smaller font-weight-bold">Pending</small>
+                        </div>
+                        <div class="col-4 border-right">
+                            <h5 class="font-weight-bold mb-0 text-info">{{ $wholesaleSummary['packing'] ?? 0 }}</h5>
+                            <small class="text-muted text-uppercase smaller font-weight-bold">Packing</small>
+                        </div>
+                        <div class="col-4">
+                            <h5 class="font-weight-bold mb-0 text-success">{{ $wholesaleSummary['sent'] ?? 0 }}</h5>
+                            <small class="text-muted text-uppercase smaller font-weight-bold">Dikirim</small>
+                        </div>
+                    </div>
+                    <div class="mt-2 pt-2 border-top">
+                        <a href="{{ route('wholesale.index') }}" class="btn btn-ghost-primary btn-xs btn-block py-1">
+                            Lacak Semua Pesanan <i class="fas fa-chevron-right ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
             <!-- Stock Alerts -->
             <div class="card card-apms">
                 <div class="card-header border-0">
@@ -459,79 +462,65 @@
             </div>
             
             <!-- Quick Links -->
-            <div class="card card-apms">
-                <div class="card-header border-0">
+            <div class="card card-apms mb-3">
+                <div class="card-header border-0 pb-0">
                     <h3 class="card-title">Aksi Cepat</h3>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-6">
-                            <a href="{{ route('transactions.create') }}" class="btn btn-ghost-primary btn-block mb-2 text-sm font-weight-bold">
-                                <i class="fas fa-cash-register mr-1"></i> Kasir
+                <div class="card-body p-2">
+                    <div class="row no-gutters">
+                        <div class="col-12 mb-1">
+                            <a href="{{ route('transactions.create') }}" class="btn btn-ghost-primary btn-sm btn-block text-left py-2 px-3 border-faint">
+                                <i class="fas fa-cash-register mr-2"></i> Kasir POS
                             </a>
                         </div>
-                        <div class="col-6">
-                            <a href="{{ route('products.create') }}" class="btn btn-outline-success btn-block mb-2 text-sm font-weight-bold">
-                                <i class="fas fa-plus mr-1"></i> Produk
+                        <div class="col-12 mb-1">
+                            <a href="{{ route('products.create') }}" class="btn btn-outline-success btn-sm btn-block text-left py-2 px-3 border-faint">
+                                <i class="fas fa-plus mr-2"></i> Tambah Produk
                             </a>
                         </div>
-                        <div class="col-6">
-                            <a href="{{ route('inventory.index') }}" class="btn btn-outline-warning btn-block mb-2 text-sm font-weight-bold">
-                                <i class="fas fa-boxes mr-1"></i> Stok
+                        <div class="col-12 mb-1">
+                            <a href="{{ route('inventory.index') }}" class="btn btn-outline-warning btn-sm btn-block text-left py-2 px-3 border-faint">
+                                <i class="fas fa-boxes mr-2"></i> Manajemen Stok
                             </a>
                         </div>
-                        <div class="col-6">
-                            <a href="{{ route('reports.index') }}" class="btn btn-outline-info btn-block mb-2 text-sm font-weight-bold">
-                                <i class="fas fa-chart-bar mr-1"></i> Laporan
+                        <div class="col-12 mb-1">
+                            <a href="{{ route('reports.index') }}" class="btn btn-outline-info btn-sm btn-block text-left py-2 px-3 border-faint">
+                                <i class="fas fa-chart-line mr-2"></i> Analitik & Laporan
                             </a>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Operational Insights (Intelligence Hub - Relocated to Sidebar) -->
+            <div class="card card-apms border-0 shadow-sm overflow-hidden mb-3">
+                <div class="card-header bg-faint-primary py-2 px-3 border-0">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-magic text-primary-apms mr-2"></i>
+                        <h6 class="mb-0 font-weight-bold text-primary-apms" style="font-size: 0.8rem;">Smart AI Logic</h6>
+                    </div>
+                </div>
+                <div class="card-body py-2 px-2">
+                    <div id="smartInsightsContainer">
+                        @forelse($smartInsights ?? [] as $insight)
+                        <div class="d-flex align-items-start p-2 rounded border-faint bg-light-apms mb-2">
+                            <i class="fas {{ $insight['icon'] }} {{ $insight['color'] }} mt-1 mr-2" style="font-size: 0.75rem;"></i>
+                            <div>
+                                <small class="text-muted d-block font-weight-bold text-uppercase" style="font-size: 0.6rem;">{{ $insight['title'] }}</small>
+                                <p class="mb-0 text-sm" style="line-height: 1.2; font-size: 0.75rem !important;">{!! $insight['text'] !!}</p>
+                            </div>
+                        </div>
+                        @empty
+                        <div class="text-center py-2">
+                            <p class="text-muted mb-0 small">Analisis...</p>
+                        </div>
+                        @endforelse
                     </div>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- Second Row -->
-    <div class="row mt-3">
-        <!-- Profit Summary -->
-        <div class="col-md-6">
-            <div class="card card-apms bg-gradient-success">
-                <div class="card-header">
-                    <h3 class="card-title">Ringkasan Keuangan {{ $periodLabel }}</h3>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-4 text-center">
-                            <h4 id="summaryRevenueText">Rp {{ number_format($periodSales, 0, ',', '.') }}</h4>
-                            <p class="mb-0">Revenue</p>
-                        </div>
-                        <div class="col-4 text-center border-left border-right">
-                            <h4 id="summaryExpenseText">Rp {{ number_format($periodExpenses, 0, ',', '.') }}</h4>
-                            <p class="mb-0">Expense</p>
-                        </div>
-                        <div class="col-4 text-center">
-                            <h4 id="summaryProfitText">Rp {{ number_format($periodProfit, 0, ',', '.') }}</h4>
-                            <p class="mb-0">Profit</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Payment Methods -->
-        <div class="col-md-6">
-            <div class="card card-apms">
-                <div class="card-header">
-                    <h3 class="card-title">Distribusi Pembayaran</h3>
-                </div>
-                <div class="card-body">
-                    <div class="position-relative mb-4">
-                        <canvas id="paymentChart" height="150"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 @endsection
 
@@ -561,9 +550,12 @@ $(function() {
     @endif
 
     // Sales Chart
-    var salesChartCanvas = $('#salesChart').get(0).getContext('2d');
+    // Create JS primitives from Blade securely
+    var labelsRaw = JSON.parse('{!! json_encode(collect($salesData)->pluck("month")) !!}');
+    var dataRaw = JSON.parse('{!! json_encode(collect($salesData)->pluck("sales")) !!}');
+
     var salesChartData = {
-        labels: @json(collect($salesData)->pluck('month')),
+        labels: labelsRaw,
         datasets: [{
             label: 'Penjualan',
             backgroundColor: 'rgba(44, 123, 229, 0.1)',
@@ -575,7 +567,7 @@ $(function() {
             borderWidth: 3,
             fill: true,
             tension: 0.4,
-            data: @json(collect($salesData)->pluck('sales'))
+            data: dataRaw
         }]
     };
     
@@ -662,13 +654,11 @@ $(function() {
                         if (insight.color.includes('warning')) borderColor = '#ffb347';
 
                         insightsHtml += `
-                        <div class="col-md-6 col-lg-3 mb-2 mb-lg-0">
-                            <div class="d-flex align-items-start p-2 rounded border">
-                                <i class="fas ${insight.icon} ${insight.color} mt-1 mr-2"></i>
-                                <div>
-                                    <small class="text-muted d-block font-weight-bold" style="text-transform: uppercase; font-size: 0.65rem;">${insight.title}</small>
-                                    <p class="mb-0 text-sm" style="line-height: 1.2;">${insight.text}</p>
-                                </div>
+                        <div class="d-flex align-items-start p-2 rounded border-faint bg-light-apms mb-2">
+                            <i class="fas ${insight.icon} ${insight.color} mt-1 mr-2" style="font-size: 0.75rem;"></i>
+                            <div>
+                                <small class="text-muted d-block font-weight-bold text-uppercase" style="font-size: 0.6rem;">${insight.title}</small>
+                                <p class="mb-0 text-sm" style="line-height: 1.2; font-size: 0.75rem !important;">${insight.text}</p>
                             </div>
                         </div>`;
                     });

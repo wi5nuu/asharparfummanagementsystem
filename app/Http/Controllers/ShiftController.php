@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Shift;
 use App\Models\Transaction;
 use App\Models\Expense;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class ShiftController extends Controller
@@ -16,10 +18,21 @@ class ShiftController extends Controller
      */
     public function index()
     {
+        /** @var \App\Models\User $authUser */
+        $authUser = Auth::user();
         $shifts = Shift::with('user')->latest()->paginate(20);
-        $activeShift = Shift::where('user_id', auth()->id())->where('status', 'open')->first();
+        $activeShift = Shift::where('user_id', $authUser->id)->where('status', 'open')->first();
         
         return view('shifts.index', compact('shifts', 'activeShift'));
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Shift $shift)
+    {
+        $shift->load(['user', 'reviewer']);
+        return view('shifts.show', compact('shift'));
     }
 
     /**
@@ -27,18 +40,24 @@ class ShiftController extends Controller
      */
     public function store(Request $request)
     {
+        /** @var User $user */
+        $user = Auth::user();
+        if ($user->role === 'owner') {
+            return back()->with('error', 'Pemilik toko (Owner) tidak melakukan buka/tutup shift secara operasional.');
+        }
+
         $request->validate([
             'initial_cash' => 'required|numeric|min:0',
         ]);
 
         // Check if there's already an open shift for this user
-        $activeShift = Shift::where('user_id', auth()->id())->where('status', 'open')->first();
+        $activeShift = Shift::where('user_id', $user->id)->where('status', 'open')->first();
         if ($activeShift) {
             return back()->with('error', 'Anda masih memiliki shift yang terbuka. Tutup shift tersebut terlebih dahulu.');
         }
 
         Shift::create([
-            'user_id' => auth()->id(),
+            'user_id' => $user->id,
             'start_time' => now(),
             'initial_cash' => $request->initial_cash,
             'status' => 'open',
@@ -92,9 +111,11 @@ class ShiftController extends Controller
 
         // Handle File Upload
         $photoPath = null;
+        /** @var User $closer */
+        $closer = Auth::user();
         if ($request->hasFile('closing_photo')) {
             $file = $request->file('closing_photo');
-            $filename = 'closing_' . date('Ymd_His') . '_' . auth()->id() . '.' . $file->getClientOriginalExtension();
+            $filename = 'closing_' . date('Ymd_His') . '_' . $closer->id . '.' . $file->getClientOriginalExtension();
             $photoPath = $file->storeAs('shifts/closing_photos', $filename, 'public');
         }
 
@@ -117,7 +138,9 @@ class ShiftController extends Controller
      */
     public static function getActiveShift()
     {
-        return Shift::where('user_id', auth()->id())->where('status', 'open')->first();
+        /** @var User $currentUser */
+        $currentUser = Auth::user();
+        return Shift::where('user_id', $currentUser->id)->where('status', 'open')->first();
     }
 
     /**
@@ -125,7 +148,9 @@ class ShiftController extends Controller
      */
     public function reviewPhoto(Request $request, Shift $shift)
     {
-        if (auth()->user()->role !== 'admin') {
+        /** @var User $reviewer */
+        $reviewer = Auth::user();
+        if ($reviewer->role !== 'admin') {
             return back()->with('error', 'Hanya Admin yang dapat mereview foto penutupan kasir.');
         }
 
@@ -137,7 +162,7 @@ class ShiftController extends Controller
 
         $shift->update([
             'photo_status' => $status,
-            'photo_reviewed_by' => auth()->id()
+            'photo_reviewed_by' => $reviewer->id
         ]);
 
         $msg = $status === 'approved' ? 'Foto bukti telah di-ACC.' : 'Foto bukti DITOLAK.';

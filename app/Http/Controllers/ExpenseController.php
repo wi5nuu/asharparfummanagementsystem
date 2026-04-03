@@ -50,6 +50,7 @@ class ExpenseController extends Controller
         ]);
 
         $data = $request->all();
+        $data['user_id'] = auth()->id();
 
         if ($request->hasFile('proof_image')) {
             $data['proof_image'] = $request->file('proof_image')->store('expenses', 'public');

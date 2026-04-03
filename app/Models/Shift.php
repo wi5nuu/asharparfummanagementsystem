@@ -12,6 +12,7 @@ class Shift extends Model
         'end_time',
         'initial_cash',
         'expected_cash',
+        'actual_cash',
         'discrepancy',
         'status',
         'notes',

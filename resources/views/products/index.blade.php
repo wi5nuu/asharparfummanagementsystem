@@ -71,10 +71,10 @@
                     
                     <!-- Products Table -->
                     <div class="table-responsive">
-                        <table class="table table-hover" id="productsTable">
+                        <table class="table table-hover table-compact" id="productsTable">
                             <thead>
                                 <tr>
-                                    <th width="50" class="text-nowrap">
+                                    <th width="30" class="text-nowrap">
                                         <input type="checkbox" id="selectAll">
                                     </th>
                                     <th class="d-none d-md-table-cell text-nowrap">Kode</th>
@@ -98,22 +98,21 @@
                                         <input type="checkbox" class="product-checkbox" value="{{ $product->id }}">
                                     </td>
                                     <td class="d-none d-md-table-cell">
-                                        <span class="badge badge-light">{{ $product->internal_id }}</span><br>
-                                        <small class="text-muted">{{ $product->barcode }}</small>
+                                        <span class="badge badge-light">{{ $product->internal_id }}</span>
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             @if($product->image)
                                             <img src="{{ asset('storage/' . $product->image) }}" 
                                                  alt="{{ $product->name }}" 
-                                                 class="img-circle img-size-32 mr-2">
+                                                 class="img-circle mr-2" style="width: 24px; height: 24px;">
                                             @else
-                                            <div class="img-circle img-size-32 bg-light d-flex align-items-center justify-content-center mr-2">
-                                                <i class="fas fa-wine-bottle text-muted"></i>
+                                            <div class="img-circle bg-light d-flex align-items-center justify-content-center mr-2" style="width: 24px; height: 24px;">
+                                                <i class="fas fa-wine-bottle text-muted" style="font-size: 0.6rem;"></i>
                                             </div>
                                             @endif
                                             <div>
-                                                <div class="font-weight-bold truncate-text">{{ $product->name }}</div>
+                                                <div class="font-weight-bold truncate-text" style="font-size: 0.85rem;">{{ $product->name }}</div>
                                                 <div class="d-sm-none text-xs-mobile text-muted">
                                                     {{ $product->category->name ?? '-' }} | {{ $product->size }}{{ $product->unit }} | {{ $product->barcode }}
                                                 </div>

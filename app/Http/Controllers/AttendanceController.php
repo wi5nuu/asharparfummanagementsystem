@@ -90,41 +90,4 @@ class AttendanceController extends Controller
 
         return back()->with('success', 'Absen pulang untuk ' . $attendance->employee_name . ' berhasil dicatat!');
     }
-
-    /**
-     * Quick add employee/staff name from the attendance page.
-     */
-    public function addEmployee(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'role' => 'required|in:cashier,packing,admin,manager,supervisor',
-        ]);
-
-        // Create a dummy user for attendance tracking
-        // We use a unique dummy email to satisfy DB constraints
-        $dummyEmail = strtolower(str_replace(' ', '.', $request->name)) . rand(100, 999) . '@apms.local';
-        
-        \App\Models\User::create([
-            'name' => $request->name,
-            'role' => $request->role,
-            'email' => $dummyEmail,
-            'password' => bcrypt('apms_staff_123'), // Default password
-        ]);
-
-        return back()->with('success', 'Nama ' . $request->name . ' berhasil ditambahkan ke daftar karyawan.');
-    }
-
-    /**
-     * Remove employee/staff name from the attendance list.
-     */
-    public function removeEmployee(\App\Models\User $user)
-    {
-        if ($user->role == 'owner') {
-            return back()->with('error', 'Pemilik toko tidak bisa dihapus dari daftar.');
-        }
-
-        $user->delete();
-        return back()->with('success', 'Nama karyawan berhasil dihapus.');
-    }
 }

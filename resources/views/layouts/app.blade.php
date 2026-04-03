@@ -169,6 +169,22 @@
             border-radius: 0.625rem;
             box-shadow: var(--falcon-shadow);
             background-color: #fff;
+            margin-bottom: 1rem;
+        }
+        
+        .card-apms .card-header {
+            padding: 0.6rem 0.85rem !important;
+            background-color: transparent;
+        }
+
+        .card-apms .card-body {
+            padding: 0.75rem 0.85rem !important;
+        }
+        
+        .card-apms .card-title {
+            font-weight: 700 !important;
+            font-size: 0.85rem !important;
+            color: var(--dark-color);
         }
         
         .card-apms:hover {
@@ -219,15 +235,17 @@
         }
 
         .smaller {
-            font-size: 0.75rem !important;
-        }
-
-        .text-xs-mobile {
-            font-size: 0.65rem !important;
+            font-size: 0.7rem !important;
         }
 
         .text-nowrap {
             white-space: nowrap !important;
+        }
+
+        .table-compact th, 
+        .table-compact td {
+            padding: 0.5rem 0.75rem !important;
+            font-size: 0.8rem !important;
         }
 
         .table-responsive {
@@ -288,7 +306,8 @@
                 font-size: 0.8rem;
             }
             .main-header.navbar {
-                min-height: 44px;
+                min-height: 38px !important;
+                padding: 0 8px !important;
             }
 
             /* Page Content Padding */
@@ -296,30 +315,54 @@
                 padding: 0 !important;
             }
             .content {
-                padding: 8px !important;
+                padding: 0 !important;
             }
             .container-fluid {
-                padding-left: 8px !important;
-                padding-right: 8px !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+                padding-top: 0 !important;
             }
 
             /* Cards */
             .card {
-                margin-bottom: 8px !important;
-                border-radius: 8px !important;
+                margin-bottom: 2px !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
             }
             .card-apms {
-                margin-bottom: 8px;
+                margin-bottom: 2px !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
             }
             .card-header {
-                padding: 8px 12px !important;
+                padding: 4px 8px !important;
+                border-bottom: 1px solid rgba(0,0,0,.05) !important;
             }
             .card-header .card-title {
-                font-size: 0.85rem !important;
+                font-size: 0.8rem !important;
                 margin-bottom: 0 !important;
             }
             .card-body {
-                padding: 10px 12px !important;
+                padding: 4px 8px !important;
+            }
+            
+            /* High Density Overrides */
+            .row-mobile-tight {
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+            }
+            .col-mobile-tight {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+            .card-mobile-flush {
+                margin: 0 !important;
+                border-radius: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+            .mobile-tight-p {
+                padding-top: 4px !important;
             }
 
             /* Info Boxes (stat cards) */
@@ -431,6 +474,7 @@
                 width: 100% !important;
                 max-width: 100vw !important;
                 overflow: hidden;
+                margin-left: 0 !important;
             }
 
             /* Fix sidebar overlay not blocking scroll */
@@ -446,25 +490,22 @@
 
             /* Content header */
             .content-header {
-                padding: 8px 12px !important;
+                padding: 5px 10px !important;
             }
             .content-header h1 {
-                font-size: 1.1rem !important;
-            }
-            .content-header .breadcrumb {
-                font-size: 0.7rem !important;
-                padding: 2px 0 !important;
-                background: none;
-            }
-
-            /* Page-specific: Dashboard top stats */
-            .stat-card {
-                padding: 8px !important;
+                font-size: 1rem !important;
             }
 
             /* Badge */
             .badge {
-                font-size: 0.65rem !important;
+                font-size: 0.6rem !important;
+                padding: 1px 4px !important;
+            }
+
+            /* Brand text mobile specifically */
+            .main-sidebar .brand-link {
+                padding-top: 10px !important;
+                padding-bottom: 10px !important;
             }
         }
 
@@ -495,11 +536,11 @@
         <ul class="navbar-nav">
             <li class="nav-item">
                 <a class="nav-link" data-widget="pushmenu" href="#" role="button">
-                    <i class="fas fa-bars text-white"></i>
+                    <i class="fas fa-bars" style="color: #5e6e82;"></i>
                 </a>
             </li>
             <li class="nav-item d-none d-sm-inline-block">
-                <a href="{{ route('dashboard') }}" class="nav-link text-white">
+                <a href="{{ route('dashboard') }}" class="nav-link" style="color: #5e6e82;">
                     <i class="fas fa-tachometer-alt mr-1"></i> Dashboard
                 </a>
             </li>
@@ -510,28 +551,32 @@
             <!-- Wholesale Notifications -->
             <li class="nav-item dropdown">
                 <a class="nav-link" data-toggle="dropdown" href="#">
-                    <i class="fas fa-bell text-white"></i>
-                    @if(count($urgentWholesaleOrders ?? []) > 0)
+                    <i class="fas fa-bell" style="color: #5e6e82;"></i>
+                    @if(isset($urgentWholesaleOrders) && is_iterable($urgentWholesaleOrders) && count($urgentWholesaleOrders) > 0)
                         <span class="badge badge-warning navbar-badge shadow-sm">{{ count($urgentWholesaleOrders) }}</span>
                     @endif
                 </a>
                 <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right border-0 shadow-lg">
-                    <span class="dropdown-item dropdown-header font-weight-bold">{{ count($urgentWholesaleOrders ?? []) }} Pesanan Grosir Mendesak</span>
+                    <span class="dropdown-item dropdown-header font-weight-bold">
+                        {{ isset($urgentWholesaleOrders) && is_iterable($urgentWholesaleOrders) ? count($urgentWholesaleOrders) : 0 }} Pesanan Grosir Mendesak
+                    </span>
                     <div class="dropdown-divider"></div>
                     
-                    @forelse($urgentWholesaleOrders ?? [] as $urgentOrder)
-                        <a href="{{ route('wholesale.show', $urgentOrder->id) }}" class="dropdown-item">
-                            <i class="fas fa-exclamation-circle text-warning mr-2"></i>
-                            <span class="text-sm font-weight-bold">{{ $urgentOrder->invoice_number }}</span>
-                            <div class="text-muted text-xs">Packing: {{ $urgentOrder->packing_days }} Hari | {{ $urgentOrder->recipient_name }}</div>
-                        </a>
-                        <div class="dropdown-divider"></div>
-                    @empty
-                        <div class="dropdown-item text-center text-muted py-3">
-                            <i class="fas fa-check-circle text-success mb-2 d-block fa-2x"></i>
-                            <span class="text-sm">Semua aman! Tidak ada paket mendesak hari ini.</span>
-                        </div>
-                    @endforelse
+                    @if(isset($urgentWholesaleOrders) && is_iterable($urgentWholesaleOrders))
+                        @forelse($urgentWholesaleOrders as $urgentOrder)
+                            <a href="{{ route('wholesale.show', $urgentOrder->id) }}" class="dropdown-item">
+                                <i class="fas fa-exclamation-circle text-warning mr-2"></i>
+                                <span class="text-sm font-weight-bold">{{ $urgentOrder->invoice_number }}</span>
+                                <div class="text-muted text-xs">Packing: {{ $urgentOrder->packing_days }} Hari | {{ $urgentOrder->recipient_name }}</div>
+                            </a>
+                            <div class="dropdown-divider"></div>
+                        @empty
+                            <div class="dropdown-item text-center text-muted py-3" style="white-space: normal !important;">
+                                <i class="fas fa-check-circle text-success mb-2 d-block fa-2x"></i>
+                                <span class="text-sm px-2 d-block">Semua aman! Tidak ada paket mendesak hari ini.</span>
+                            </div>
+                        @endforelse
+                    @endif
                     
                     <a href="{{ route('wholesale.index') }}" class="dropdown-item dropdown-footer">Lihat Semua Pesanan Grosir</a>
                 </div>
@@ -539,8 +584,8 @@
 
             <li class="nav-item dropdown">
                 <a class="nav-link" data-toggle="dropdown" href="#">
-                    <i class="far fa-user-circle text-white"></i>
-                    {{ Auth::user()->name }}
+                    <i class="far fa-user-circle" style="color: #5e6e82;"></i>
+                    <span class="text-dark-apms d-none d-md-inline">{{ Auth::user()->name }}</span>
                 </a>
                 <div class="dropdown-menu dropdown-menu-right">
                     <a href="{{ route('settings.profile') }}" class="dropdown-item">
@@ -562,10 +607,11 @@
     <!-- Sidebar -->
     <aside class="main-sidebar sidebar-light-primary elevation-4 sidebar-apms">
         <!-- Brand Logo -->
-        <a href="{{ route('dashboard') }}" class="brand-link border-0 text-center py-2 d-flex align-items-center justify-content-center">
-            <img src="{{ asset('logotoko.png') }}" alt="{{ $app_settings['store_name'] ?? 'APMS' }}" 
-                 style="height: 32px; width: 32px; object-fit: contain; border-radius: 6px; margin-right: 8px;">
-            <span class="brand-text font-weight-bold" style="color: var(--primary-color); font-size: 1.2rem; letter-spacing: -0.02rem;">
+        <a href="{{ route('dashboard') }}" class="brand-link border-0 py-2 d-flex align-items-center" style="line-height: 1;">
+            <img src="{{ asset('logotoko.png') }}" alt="APMS" 
+                 class="brand-image elevation-0"
+                 style="opacity: .9; width: 28px; height: 28px; object-fit: contain; margin-left: 0.5rem;">
+            <span class="brand-text font-weight-bold ml-2 text-truncate" style="color: var(--primary-color); font-size: 1rem; letter-spacing: -0.01rem;">
                 {{ $app_settings['store_name'] ?? 'APMS' }}
             </span>
         </a>
@@ -609,7 +655,7 @@
                     </li>
                     <li class="nav-item">
                         <a href="{{ route('wholesale.index') }}" class="nav-link {{ request()->routeIs('wholesale.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-boxes-packing"></i>
+                            <i class="nav-icon fas fa-truck-moving"></i>
                             <p>Manajemen Grosir</p>
                         </a>
                     </li>
@@ -688,7 +734,7 @@
                     @can('manage_employees')
                     <li class="nav-item">
                         <a href="{{ route('attendances.index') }}" class="nav-link {{ request()->routeIs('attendances.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-clipboard-user"></i>
+                            <i class="nav-icon fas fa-user-check"></i>
                             <p>Absensi Kehadiran</p>
                         </a>
                     </li>
@@ -717,7 +763,7 @@
     <div class="content-wrapper">
         <!-- Main content -->
         <section class="content">
-            <div class="container-fluid">
+            <div class="container-fluid pt-3 pb-4">
                 @yield('content')
             </div>
         </section>
@@ -744,29 +790,51 @@
 <script src="https://cdn.jsdelivr.net/npm/dropzone@5.9.3/dist/min/dropzone.min.js"></script>
 
     <!-- AI Assistant FAB -->
-    <div id="ai-assistant-fab" class="shadow-lg">
-        <i class="fas fa-magic"></i>
+    <div id="ai-assistant-fab" class="shadow-lg" title="APMS AI Copilot">
+        <i class="fas fa-robot"></i>
+        <span id="ai-fab-pulse"></span>
     </div>
 
     <!-- AI Chat Window -->
     <div id="ai-chat-window" class="shadow-lg d-none">
         <div class="ai-chat-header d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center">
-                <div class="ai-status-dot mr-2"></div>
-                <span class="font-weight-bold">APMS Assistant</span>
+                <div class="ai-avatar-header mr-2">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div>
+                    <div class="font-weight-bold" style="font-size:0.9rem;">APMS Copilot</div>
+                    <div class="d-flex align-items-center">
+                        <div class="ai-status-dot mr-1"></div>
+                        <span style="font-size:0.7rem;opacity:0.85;">Online &bull; Lokal &bull; 100% Aman</span>
+                    </div>
+                </div>
             </div>
             <button type="button" id="close-ai-chat" class="btn btn-sm text-white">
                 <i class="fas fa-times"></i>
             </button>
         </div>
+
+        <!-- Quick Action Chips -->
+        <div id="ai-chips" class="ai-chips-bar px-2 py-1">
+            <span class="ai-chip" data-msg="Berapa penjualan hari ini?">💰 Penjualan</span>
+            <span class="ai-chip" data-msg="Cek stok yang habis">📦 Stok Habis</span>
+            <span class="ai-chip" data-msg="Dimana halaman kasir?">🏪 Kasir</span>
+            <span class="ai-chip" data-msg="Dimana pengaturan?">⚙️ Pengaturan</span>
+            <span class="ai-chip" data-msg="Siapa kasir yang jaga?">👤 Shift</span>
+            <span class="ai-chip" data-msg="Berapa jumlah pelanggan?">🧑‍🤝‍🧑 Pelanggan</span>
+        </div>
+
         <div id="ai-chat-messages" class="p-3">
-            <div class="ai-msg bot">
-                Halo! Saya asisten pintar APMS. Ada yang bisa saya bantu hari ini?
+            <div class="ai-msg-wrapper bot-wrapper">
+                <div class="ai-avatar-bot"><i class="fas fa-robot"></i></div>
+                <div class="ai-msg bot">Halo! 👋 Saya <strong>APMS Copilot</strong>, asisten pintar offline Anda.<br>Tanyakan apa saja, atau tekan chip di atas untuk akses cepat!</div>
             </div>
         </div>
+
         <div class="ai-chat-footer p-2">
             <div class="input-group">
-                <input type="text" id="ai-chat-input" class="form-control form-control-sm border-0" placeholder="Tanya sesuatu...">
+                <input type="text" id="ai-chat-input" class="form-control form-control-sm border-0" placeholder="Ketik pertanyaan atau perintah..." autocomplete="off">
                 <div class="input-group-append">
                     <button class="btn btn-primary-apms btn-sm" id="send-ai-msg">
                         <i class="fas fa-paper-plane"></i>
@@ -777,92 +845,161 @@
     </div>
 
     <style>
+        /* ===== APMS Copilot Widget Styles ===== */
         #ai-assistant-fab {
             position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 50px;
-            height: 50px;
-            background: var(--primary-color);
+            bottom: 28px;
+            right: 28px;
+            width: 54px;
+            height: 54px;
+            background: linear-gradient(135deg, var(--primary-color), #5e9cf2);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 1.25rem;
+            font-size: 1.35rem;
             cursor: pointer;
             z-index: 9999;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(44, 123, 229, 0.3);
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 6px 20px rgba(44, 123, 229, 0.4);
         }
         #ai-assistant-fab:hover {
-            transform: scale(1.1);
-            background: var(--primary-dark);
+            transform: scale(1.12) rotate(-8deg);
+            box-shadow: 0 8px 28px rgba(44, 123, 229, 0.5);
+        }
+        #ai-fab-pulse {
+            position: absolute;
+            top: 4px; right: 4px;
+            width: 10px; height: 10px;
+            background: #00e676;
+            border-radius: 50%;
+            border: 2px solid white;
         }
         #ai-chat-window {
             position: fixed;
-            bottom: 100px;
-            right: 30px;
-            width: 350px;
-            max-width: calc(100vw - 60px);
-            height: 450px;
-            max-height: calc(100vh - 150px);
+            bottom: 95px;
+            right: 28px;
+            width: 370px;
+            max-width: calc(100vw - 56px);
+            height: 520px;
+            max-height: calc(100vh - 140px);
             background: white;
-            border-radius: 15px;
+            border-radius: 18px;
             z-index: 9998;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+            border: 1px solid rgba(0,0,0,0.06);
+            transition: all 0.3s ease;
         }
         .ai-chat-header {
-            background: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color), #5e9cf2);
             color: white;
             padding: 12px 15px;
+            flex-shrink: 0;
+        }
+        .ai-avatar-header {
+            width: 36px; height: 36px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
         }
         .ai-status-dot {
-            width: 8px;
-            height: 8px;
-            background: #00ff00;
+            width: 7px; height: 7px;
+            background: #00e676;
             border-radius: 50%;
-            box-shadow: 0 0 5px #00ff00;
+            animation: pulseDot 2s infinite;
+        }
+        @keyframes pulseDot {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0,230,118,0.5); }
+            50% { box-shadow: 0 0 0 4px rgba(0,230,118,0); }
+        }
+        .ai-chips-bar {
+            background: #f0f5ff;
+            border-bottom: 1px solid #e8eef8;
+            overflow-x: auto;
+            white-space: nowrap;
+            flex-shrink: 0;
+            scrollbar-width: none;
+        }
+        .ai-chips-bar::-webkit-scrollbar { display: none; }
+        .ai-chip {
+            display: inline-block;
+            background: white;
+            border: 1px solid #d0e0ff;
+            color: var(--primary-color);
+            border-radius: 20px;
+            padding: 3px 11px;
+            font-size: 0.72rem;
+            margin-right: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+        }
+        .ai-chip:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
         }
         #ai-chat-messages {
             flex-grow: 1;
             overflow-y: auto;
-            background: #f8faff;
+            background: #f5f8ff;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
+            padding: 14px;
+        }
+        .ai-msg-wrapper {
+            display: flex;
+            align-items: flex-end;
+            gap: 7px;
+        }
+        .bot-wrapper { justify-content: flex-start; }
+        .user-wrapper { justify-content: flex-end; }
+        .ai-avatar-bot {
+            width: 26px; height: 26px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 0.7rem;
+            flex-shrink: 0;
         }
         .ai-msg {
-            padding: 8px 12px;
-            border-radius: 12px;
+            padding: 8px 13px;
+            border-radius: 14px;
             max-width: 85%;
-            font-size: 0.85rem;
-            line-height: 1.4;
+            font-size: 0.82rem;
+            line-height: 1.5;
         }
         .ai-msg.bot {
             background: white;
-            align-self: flex-start;
-            border-bottom-left-radius: 2px;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.02);
-            border: 1px solid #eee;
+            border-bottom-left-radius: 3px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid #e8eef8;
         }
         .ai-msg.user {
             background: var(--primary-color);
             color: white;
-            align-self: flex-end;
-            border-bottom-right-radius: 2px;
+            border-bottom-right-radius: 3px;
         }
+        .ai-msg .btn { font-size: 0.75rem !important; padding: 4px 10px !important; }
         .ai-chat-footer {
             background: white;
-            border-top: 1px solid #eee;
+            border-top: 1px solid #edf2f9;
+            padding: 8px 10px;
+            flex-shrink: 0;
         }
         .ai-typing {
             font-style: italic;
-            color: #999;
-            font-size: 0.75rem;
+            color: #adb5bd;
+            font-size: 0.78rem;
+        }
+        .ai-chat-footer .form-control:focus {
+            box-shadow: none;
         }
     </style>
 
@@ -889,24 +1026,49 @@
             window.addClass('d-none');
         });
 
+        // Chip click handler
+        $(document).on('click', '.ai-chip', function() {
+            input.val($(this).data('msg'));
+            sendMessage();
+        });
+
+        // Append a bot message
+        function appendBot(html) {
+            // Parse **bold** markdown
+            let formatted = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            const wrapper = `<div class="ai-msg-wrapper bot-wrapper">
+                <div class="ai-avatar-bot"><i class="fas fa-robot"></i></div>
+                <div class="ai-msg bot">${formatted}</div>
+            </div>`;
+            messages.append(wrapper);
+            messages.animate({ scrollTop: messages[0].scrollHeight }, 250);
+        }
+
         // Send function
         function sendMessage() {
             const text = input.val().trim();
             if (!text) return;
 
-            // Add user message
-            messages.append(`<div class="ai-msg user">${text}</div>`);
+            // Add user message bubble
+            messages.append(`
+                <div class="ai-msg-wrapper user-wrapper">
+                    <div class="ai-msg user">${$('<span>').text(text).html()}</div>
+                </div>`);
             input.val('');
-            messages.scrollTop(messages[0].scrollHeight);
+            messages.animate({ scrollTop: messages[0].scrollHeight }, 150);
 
             // Typing indicator
             const typingId = 'typing-' + Date.now();
-            messages.append(`<div id="${typingId}" class="ai-msg bot ai-typing">Menganalisis data...</div>`);
-            messages.scrollTop(messages[0].scrollHeight);
+            messages.append(`
+                <div id="${typingId}" class="ai-msg-wrapper bot-wrapper">
+                    <div class="ai-avatar-bot"><i class="fas fa-robot"></i></div>
+                    <div class="ai-msg bot ai-typing">⚙️ Memproses...</div>
+                </div>`);
+            messages.animate({ scrollTop: messages[0].scrollHeight }, 150);
 
             // AJAX to backend
             $.ajax({
-                url: '/api/ai/ask',
+                url: '/ai/chat',
                 method: 'POST',
                 data: {
                     _token: $('meta[name="csrf-token"]').attr('content'),
@@ -914,13 +1076,11 @@
                 },
                 success: function(response) {
                     $(`#${typingId}`).remove();
-                    messages.append(`<div class="ai-msg bot">${response.reply.replace(/\n/g, '<br>')}</div>`);
-                    messages.scrollTop(messages[0].scrollHeight);
+                    appendBot(response.reply);
                 },
-                error: function() {
+                error: function(xhr) {
                     $(`#${typingId}`).remove();
-                    messages.append(`<div class="ai-msg bot text-danger">Maaf, koneksi saya sedang terganggu. Coba lagi nanti ya.</div>`);
-                    messages.scrollTop(messages[0].scrollHeight);
+                    appendBot('⚠️ Maaf, server saya sedang sibuk. Coba lagi dalam beberapa detik ya.');
                 }
             });
         }

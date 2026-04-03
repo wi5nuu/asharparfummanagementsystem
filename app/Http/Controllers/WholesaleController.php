@@ -117,12 +117,36 @@ class WholesaleController extends Controller
             return back()->with('error', 'Hanya Admin atau Owner yang dapat mengkonfirmasi pesanan grosir!');
         }
 
-        $order->update([
-            'status' => 'on_progress',
-            'confirmed_at' => Carbon::now(),
-        ]);
+        try {
+            DB::beginTransaction();
 
-        return back()->with('success', 'Pesanan dikonfirmasi dan sedang diproses!');
+            $order->update([
+                'status' => 'on_progress',
+                'confirmed_at' => Carbon::now(),
+            ]);
+
+            // Deduct Stock automatically
+            foreach ($order->details as $detail) {
+                if ($detail->product_id) {
+                    $inventory = \App\Models\Inventory::where('product_id', $detail->product_id)->first();
+                    if ($inventory) {
+                        // Optional: Add stock validation
+                        if ($inventory->current_stock < $detail->quantity) {
+                            throw new \Exception("Stok gudang tidak cukup untuk produk: " . $detail->product_name . " (Sisa: " . $inventory->current_stock . ")");
+                        }
+                        
+                        $inventory->decrement('current_stock', $detail->quantity);
+                        $inventory->save();
+                    }
+                }
+            }
+
+            DB::commit();
+            return back()->with('success', 'Pesanan dikonfirmasi dan stok gudang otomatis terpotong!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal mengkonfirmasi: ' . $e->getMessage());
+        }
     }
 
     public function markReady(WholesaleOrder $order)

@@ -86,7 +86,7 @@
                             <p><strong>Kurir:</strong> {{ $order->shipping_courier ?? '-' }}</p>
                             <p><strong>P. Jawab / Pengiriman:</strong> {{ $order->delivery_handler ?? '-' }}</p>
                             <p><strong>Estimasi Packing:</strong> {{ $order->packing_days ?? 1 }} Hari</p>
-                            <p><strong>Dibuat Oleh:</strong> {{ $order->user->name }}</p>
+                            <p><strong>Dibuat Oleh:</strong> {{ $order->user->name ?? 'System' }}</p>
                             <p><strong>Terdaftar:</strong> {{ $order->created_at->format('d M Y H:i') }}</p>
                             @if($order->barcode)
                                 <div class="mt-3">
@@ -148,24 +148,28 @@
                                 <i class="fas fa-shipping-fast mr-2"></i> SELESAI TERKIRIM
                             </button>
                         </form>
-                        <a href="{{ $whatsappUrl }}" target="_blank" class="btn btn-success btn-block mt-3 shadow-sm rounded-pill">
-                            <i class="fab fa-whatsapp mr-2"></i> Kirim Invoice ke WhatsApp
-                        </a>
-                        <a href="{{ route('wholesale.print', $order->id) }}" target="_blank" class="btn btn-outline-dark btn-block mt-2 shadow-sm rounded-pill border-2">
-                            <i class="fas fa-print mr-2"></i> Cetak Invoice Professional
-                        </a>
+                        <div class="d-flex mt-3" style="gap: 8px;">
+                            <a href="{{ $whatsappUrl }}" target="_blank" class="btn btn-success flex-fill shadow-sm rounded-pill" style="font-size: 0.75rem;">
+                                <i class="fab fa-whatsapp mr-1"></i> WhatsApp
+                            </a>
+                            <a href="{{ route('wholesale.print', $order->id) }}" target="_blank" class="btn btn-outline-dark flex-fill shadow-sm rounded-pill border-2" style="font-size: 0.75rem;">
+                                <i class="fas fa-print mr-1"></i> Cetak Invoice
+                            </a>
+                        </div>
 
                     @elseif($order->status == 'completed')
                         <div class="text-center py-4">
                             <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
                             <h5 class="font-weight-bold">Pesanan Selesai</h5>
                             <p class="text-muted">Faktur telah masuk dalam catatan keuangan Grosir.</p>
-                            <a href="{{ $whatsappUrl }}" target="_blank" class="btn btn-success btn-block mt-3 shadow-sm rounded-pill">
-                                <i class="fab fa-whatsapp mr-2"></i> Kirim Ulang ke WhatsApp
-                            </a>
-                            <a href="{{ route('wholesale.print', $order->id) }}" target="_blank" class="btn btn-outline-dark btn-block mt-2 shadow-sm rounded-pill border-2">
-                                <i class="fas fa-print mr-2"></i> Cetak Ulang Invoice
-                            </a>
+                            <div class="d-flex mt-3" style="gap: 8px;">
+                                <a href="{{ $whatsappUrl }}" target="_blank" class="btn btn-success flex-fill shadow-sm rounded-pill" style="font-size: 0.75rem;">
+                                    <i class="fab fa-whatsapp mr-1"></i> WhatsApp
+                                </a>
+                                <a href="{{ route('wholesale.print', $order->id) }}" target="_blank" class="btn btn-outline-dark flex-fill shadow-sm rounded-pill border-2" style="font-size: 0.75rem;">
+                                    <i class="fas fa-print mr-1"></i> Cetak Invoice
+                                </a>
+                            </div>
                         </div>
                     @endif
                 </div>

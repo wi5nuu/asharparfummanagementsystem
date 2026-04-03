@@ -28,11 +28,18 @@
                                 <tbody id="itemRows">
                                     <tr class="item-row">
                                         <td>
-                                            <input type="text" name="items[0][product_name]" class="form-control" placeholder="Contoh: Aroma Baccarat" required>
-                                            <input type="hidden" name="items[0][product_id]" value="">
+                                            <select name="items[0][product_id]" class="form-control product-select" required onchange="handleProductSelect(this, 0)">
+                                                <option value="">-- Pilih Barang --</option>
+                                                @foreach($products as $product)
+                                                    <option value="{{ $product->id }}" data-price="{{ $product->wholesale_price ?: $product->selling_price }}" data-name="{{ $product->name }}" data-volume="{{ str_replace(['ml', 'ML', 'Ml'], '', $product->size) }}">
+                                                        {{ $product->name }} ({{ $product->size }}{{ $product->unit }})
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            <input type="hidden" name="items[0][product_name]" class="product-name-hidden" value="">
                                         </td>
                                         <td><input type="number" name="items[0][quantity]" class="form-control qty-input" value="1" min="1" required></td>
-                                        <td><input type="number" name="items[0][volume_ml]" class="form-control" placeholder="Misal: 100"></td>
+                                        <td><input type="number" name="items[0][volume_ml]" class="form-control volume-input" placeholder="Misal: 100"></td>
                                         <td><input type="number" name="items[0][price]" class="form-control price-input" placeholder="Harga" required></td>
                                         <td></td>
                                     </tr>
@@ -107,18 +114,56 @@
 </div>
 
 @push('scripts')
+<!-- Load Select2 specific for Create Wholesale if needed -->
 <script>
 let rowCount = 1;
+const productsHtml = `
+    <option value="">-- Pilih Barang --</option>
+    @foreach($products as $product)
+        <option value="{{ $product->id }}" data-price="{{ $product->wholesale_price ?: $product->selling_price }}" data-name="{{ $product->name }}" data-volume="{{ str_replace(['ml', 'ML', 'Ml'], '', $product->size) }}">
+            {{ $product->name }} ({{ $product->size }}{{ $product->unit }})
+        </option>
+    @endforeach
+`;
+
+$(document).ready(function() {
+    initSelect2();
+});
+
+function initSelect2() {
+    $('.product-select').select2({
+        theme: 'bootstrap4',
+        width: '100%'
+    });
+}
+
+function handleProductSelect(selectElement, rowIndex) {
+    const selectedOption = $(selectElement).find('option:selected');
+    const price = selectedOption.data('price');
+    const name = selectedOption.data('name');
+    const volume = selectedOption.data('volume');
+    
+    const row = $(selectElement).closest('tr');
+    
+    // Auto-fill hidden name, price, and volume
+    row.find('.product-name-hidden').val(name);
+    if(price) row.find('.price-input').val(price);
+    if(volume) row.find('.volume-input').val(volume);
+    
+    calculateTotal();
+}
 
 function addItemRow() {
     const html = `
     <tr class="item-row">
         <td>
-            <input type="text" name="items[${rowCount}][product_name]" class="form-control" placeholder="Nama Barang..." required>
-            <input type="hidden" name="items[${rowCount}][product_id]" value="">
+            <select name="items[${rowCount}][product_id]" class="form-control product-select" required onchange="handleProductSelect(this, ${rowCount})">
+                ${productsHtml}
+            </select>
+            <input type="hidden" name="items[${rowCount}][product_name]" class="product-name-hidden" value="">
         </td>
         <td><input type="number" name="items[${rowCount}][quantity]" class="form-control qty-input" value="1" min="1" required></td>
-        <td><input type="number" name="items[${rowCount}][volume_ml]" class="form-control" placeholder="ml"></td>
+        <td><input type="number" name="items[${rowCount}][volume_ml]" class="form-control volume-input" placeholder="ml"></td>
         <td><input type="number" name="items[${rowCount}][price]" class="form-control price-input" placeholder="Harga" required></td>
         <td>
             <button type="button" class="btn btn-link text-danger p-0" onclick="removeRow(this)">
@@ -127,6 +172,7 @@ function addItemRow() {
         </td>
     </tr>`;
     $('#itemRows').append(html);
+    initSelect2();
     rowCount++;
     calculateTotal();
 }

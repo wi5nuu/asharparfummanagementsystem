@@ -1,137 +1,270 @@
 @push('styles')
 <style>
-    .login-box {
-        width: 400px;
-        animation: fadeInDown 0.8s ease-out;
+    :root {
+        --apms-primary: #3b82f6;
+        --apms-primary-dark: #2563eb;
+        --apms-slate: #1e293b;
     }
-    .glass-card {
-        background: rgba(15, 23, 42, 0.8) !important; /* Darker slate background */
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 24px;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        color: #f8fafc; /* High contrast off-white */
+
+    .login-container {
+        display: flex;
+        width: 100%;
+        height: 100vh;
     }
-    .login-logo a {
-        color: #ffffff !important;
-        text-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+
+    /* Left Side: Branding */
+    .login-branding {
+        flex: 1; /* Exactly 50% */
+        background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 60px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .branding-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        max-width: 500px;
+    }
+
+    .branding-circle-1 {
+        position: absolute;
+        width: 700px;
+        height: 700px;
+        border: 70px solid rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
+        top: -150px;
+        left: -150px;
+    }
+
+    .branding-circle-2 {
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        border: 50px solid rgba(255, 255, 255, 0.03);
+        border-radius: 50%;
+        bottom: -100px;
+        right: -100px;
+    }
+
+    .branding-title {
+        font-size: 2.8rem;
         font-weight: 800;
-        letter-spacing: 3px;
+        line-height: 1.15;
+        margin-bottom: 25px;
+        text-shadow: 0 4px 15px rgba(0,0,0,0.15);
     }
-    .login-logo b { color: #fbbf24; } /* Amber/Gold accent */
-    
-    .form-control {
-        background: rgba(30, 41, 59, 0.7) !important;
-        border: 1px solid rgba(71, 85, 105, 0.5) !important;
-        color: #f1f5f9 !important;
-        border-radius: 12px !important;
-        padding: 28px 18px !important;
-        transition: all 0.3s ease;
+
+    /* Right Side: Form */
+    .login-form-section {
+        flex: 1; /* Exactly 50% */
+        background: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center; /* Center the form content */
+        padding: 60px;
+        box-shadow: -15px 0 40px rgba(0,0,0,0.05);
     }
-    .form-control:focus {
-        background: rgba(30, 41, 59, 0.9) !important;
-        border-color: #fbbf24 !important;
-        box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.2) !important;
+
+    .form-wrapper {
+        width: 100%;
+        max-width: 380px; /* Capped width for better focus */
     }
-    .form-control::placeholder { color: #94a3b8; }
-    .input-group-text {
-        background: rgba(30, 41, 59, 0.7) !important;
-        border: 1px solid rgba(71, 85, 105, 0.5) !important;
-        border-left: none !important;
-        color: #fbbf24 !important;
-        border-radius: 0 12px 12px 0 !important;
-    }
-    
-    .btn-primary {
-        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
-        color: #1e1b4b !important; /* Dark text for light button */
-        border: none !important;
-        border-radius: 12px !important;
-        padding: 14px !important;
+
+    .form-header h2 {
         font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        color: var(--apms-slate);
+        margin-bottom: 5px;
     }
-    .btn-primary:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 20px -5px rgba(251, 191, 36, 0.5);
+
+    .form-header p {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin-bottom: 35px;
     }
-    
-    @keyframes fadeInDown {
-        from { opacity: 0; transform: translateY(-30px); }
-        to { opacity: 1; transform: translateY(0); }
+
+    .apms-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 8px;
+        display: block;
     }
-    
-    .password-toggle {
+
+    .apms-input-group {
+        position: relative;
+        margin-bottom: 24px;
+    }
+
+    .apms-input-group i {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        z-index: 5;
+    }
+
+    .apms-input {
+        width: 100%;
+        padding: 12px 15px;
+        padding-right: 45px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+        outline: none;
+    }
+
+    .apms-input:focus {
+        border-color: var(--apms-primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-utility {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        font-size: 0.85rem;
+    }
+
+    .btn-login {
+        background: var(--apms-primary);
+        color: white;
+        border: none;
+        display: block;
+        margin: 0 auto;
+        width: 160px; /* Reduced width */
+        padding: 10px; /* Reduced padding */
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.9rem; /* Slightly smaller text */
+        transition: all 0.2s;
         cursor: pointer;
-        transition: color 0.2s;
     }
-    .password-toggle:hover { color: #f39c12; }
+
+    .btn-login:hover {
+        background: var(--apms-primary-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .policy-text {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        text-align: center;
+        margin-top: 15px;
+        line-height: 1.5;
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+        .login-page {
+            align-items: center; /* Center vertically on mobile */
+            overflow-y: hidden; /* Prevent scroll if possible */
+        }
+        .login-container {
+            flex-direction: column;
+            height: 100vh;
+        }
+        .login-branding {
+            height: 20vh; /* Shorter branding section */
+            flex: none;
+            padding: 15px;
+            justify-content: center;
+        }
+        .branding-title { font-size: 1.4rem; margin-bottom: 0; }
+        .branding-circle-1, .branding-circle-2, .opacity-75 { display: none; }
+        
+        .login-form-section {
+            flex: 1;
+            width: 100%;
+            padding: 25px 20px; /* Tighter padding */
+            border-radius: 25px 25px 0 0;
+            margin-top: -20px;
+            z-index: 10;
+            justify-content: flex-start; /* Start from top to fit everything */
+        }
+        .form-header h2 { font-size: 1.5rem; margin-bottom: 2px; }
+        .form-header p { font-size: 0.85rem; margin-bottom: 15px; }
+        .apms-input-group { margin-bottom: 10px; }
+        .form-utility { margin-bottom: 15px; }
+        .policy-text { margin-top: 12px; font-size: 0.7rem; }
+        .btn-login { padding: 12px; }
+    }
 </style>
-@endpush
 
 <x-guest-layout>
-    <div class="login-box">
-        <div class="login-logo mb-4">
-            <a href="/"><b>APMS</b> ASHAR PARFUM</a>
+    <div class="login-container">
+        <!-- Brand Section -->
+        <div class="login-branding">
+            <div class="branding-circle-1"></div>
+            <div class="branding-circle-2"></div>
+            <div class="branding-content">
+                <h1 class="branding-title">Welcome to<br>APMS ASHAR PARFUM</h1>
+                <p class="opacity-75">Sistem Manajemen Inventori & Penjualan Parfum Otomatis.</p>
+            </div>
         </div>
-        
-        <div class="card glass-card">
-            <div class="card-body login-card-body bg-transparent">
-                <h4 class="text-center mb-4 font-weight-bold">Selamat Datang</h4>
-                <p class="login-box-msg text-white-50">Silakan login untuk masuk ke dashboard sistem</p>
+
+        <!-- Form Section -->
+        <div class="login-form-section">
+            <div class="form-wrapper">
+                <div class="form-header">
+                    <h2>Login</h2>
+                    <p>Selamat datang kak</p>
+                </div>
 
                 @if($errors->any())
-                    <div class="alert alert-danger border-0 bg-danger-gradient" style="border-radius: 10px; background: rgba(220, 53, 69, 0.2);">
-                        <ul class="mb-0 small">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
+                    <div class="alert alert-danger py-2 px-3 small border-0 mb-4" style="border-radius: 8px;">
+                        <i class="fas fa-exclamation-circle mr-1"></i> Email atau Password salah.
                     </div>
                 @endif
 
-                <form action="{{ route('login') }}" method="post">
+                <form action="{{ route('login') }}" method="post" id="loginForm">
                     @csrf
-                    <div class="input-group mb-4">
-                        <input type="email" name="email" class="form-control" placeholder="Email Address" value="{{ old('email') }}" required autofocus>
-                        <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fas fa-envelope"></span>
-                            </div>
+                    <div class="form-group mb-3">
+                        <label class="apms-label">User Email</label>
+                        <div class="apms-input-group">
+                            <input type="email" name="email" class="apms-input" placeholder="email@gmail.com" value="{{ old('email') }}" required autofocus>
+                            <i class="fas fa-user"></i>
                         </div>
                     </div>
-                    
-                    <div class="input-group mb-4">
-                        <input type="password" name="password" id="passwordInput" class="form-control" placeholder="Password" required>
-                        <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fas fa-eye password-toggle" onclick="togglePassword()"></span>
-                            </div>
+
+                    <div class="form-group mb-3">
+                        <label class="apms-label">Password</label>
+                        <div class="apms-input-group">
+                            <input type="password" name="password" id="passwordInput" class="apms-input" placeholder="••••••••" required>
+                            <i class="fas fa-eye-slash" id="toggleIcon" style="cursor: pointer;" onclick="togglePassword()"></i>
                         </div>
                     </div>
-                    
-                    <div class="row align-items-center mb-3">
-                        <div class="col-7">
-                            <div class="icheck-primary d-inline">
-                                <input type="checkbox" id="remember" name="remember">
-                                <label for="remember" class="text-white-50 small">Ingat Saya</label>
-                            </div>
+
+                    <div class="form-utility">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="remember" name="remember">
+                            <label class="custom-control-label font-weight-normal text-muted" for="remember">Remember Me</label>
                         </div>
-                        <div class="col-5 text-right">
-                            <a href="{{ route('password.request') }}" class="text-warning small">Lupa password?</a>
-                        </div>
+                        <a href="{{ route('password.request') }}" class="text-primary font-weight-bold">Forget Password?</a>
                     </div>
-                    
-                    <button type="submit" class="btn btn-primary btn-block mb-3">
-                        <i class="fas fa-sign-in-alt mr-2"></i> MASUK SEKARANG
+
+                    <button type="submit" class="btn-login shadow-sm">
+                        Login
                     </button>
+
+                    <p class="policy-text">
+                        Dengan masuk, Anda menyetujui <a href="#" class="text-primary font-weight-bold">Ketentuan Layanan</a> <br> dan <a href="#" class="text-primary font-weight-bold">Kebijakan Privasi</a> kami.
+                    </p>
                 </form>
 
-                <div class="text-center mt-3">
-                    <small class="text-white-50">Powered by APMS v2.0</small>
+                <div class="text-center mt-5">
+                    <small class="text-muted">Powered by APMS v2.0</small>
                 </div>
             </div>
         </div>
@@ -140,15 +273,15 @@
     <script>
         function togglePassword() {
             const input = document.getElementById('passwordInput');
-            const icon = document.querySelector('.password-toggle');
+            const icon = document.getElementById('toggleIcon');
             if (input.type === "password") {
                 input.type = "text";
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = "password";
                 icon.classList.remove('fa-eye-slash');
                 icon.classList.add('fa-eye');
+            } else {
+                input.type = "password";
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
             }
         }
     </script>

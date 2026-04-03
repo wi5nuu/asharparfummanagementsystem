@@ -28,6 +28,19 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $user = Auth::user();
+        $restrictedRoles = ['admin', 'cashier', 'supervisor'];
+        
+        if (in_array($user->role, $restrictedRoles)) {
+            $activeShift = \App\Models\Shift::where('user_id', $user->id)
+                ->where('status', 'open')
+                ->first();
+                
+            if (!$activeShift) {
+                return redirect()->route('shifts.index')->with('info', 'Silakan buka shift Anda sebelum memulai transaksi hari ini.');
+            }
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 

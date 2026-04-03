@@ -7,11 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 class Expense extends Model
 {
     protected $fillable = [
-        'expense_category_id',
+        'user_id',
+        'category_id',
         'description',
         'amount',
+        'vendor',
+        'type',
         'date',
-        'notes',
+        'proof_image',
     ];
 
     protected $casts = [
@@ -19,8 +22,13 @@ class Expense extends Model
         'date' => 'date',
     ];
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function category()
     {
-        return $this->belongsTo(ExpenseCategory::class, 'expense_category_id');
+        return $this->belongsTo(ExpenseCategory::class, 'category_id');
     }
 }

@@ -15,34 +15,50 @@ class ReportController extends Controller
 {
     public function index()
     {
+        $startDate = Carbon::now()->startOfMonth();
+        $endDate = Carbon::now()->endOfMonth();
+        
+        // Combined Revenue: RetailTransactions + WholesaleOrders
+        $retailRevenue = Transaction::whereMonth('created_at', now()->month)->sum('total_amount') ?? 0;
+        $wholesaleRevenue = \App\Models\WholesaleOrder::whereMonth('created_at', now()->month)
+            ->where('status', '!=', 'cancelled')
+            ->sum('total_amount') ?? 0;
+        $totalCombinedRevenue = $retailRevenue + $wholesaleRevenue;
+
+        // Housing Stats (New)
+        $housingStats = [
+            'mess' => \App\Models\User::where('is_staying_in_mess', true)->count(),
+            'house' => \App\Models\User::where('is_staying_in_mess', false)->count(),
+        ];
+
         // Build report cards
         $reportCards = [
             [
-                'title' => 'Total Penjualan Bulan Ini',
-                'value' => 'Rp ' . number_format(Transaction::whereMonth('created_at', now()->month)->sum('total_amount'), 0, ',', '.'),
-                'color' => 'success',
-                'icon' => 'fas fa-money-bill-wave',
+                'title' => 'Total Omzet (Gabungan)',
+                'value' => 'Rp ' . number_format($totalCombinedRevenue, 0, ',', '.'),
+                'color' => 'primary',
+                'icon' => 'fas fa-chart-line',
                 'link' => route('reports.sales')
             ],
             [
                 'title' => 'Total Transaksi',
                 'value' => Transaction::whereMonth('created_at', now()->month)->count(),
-                'color' => 'primary',
+                'color' => 'info',
                 'icon' => 'fas fa-exchange-alt',
                 'link' => route('reports.sales')
             ],
             [
                 'title' => 'Total Produk',
                 'value' => Product::count(),
-                'color' => 'warning',
+                'color' => 'success',
                 'icon' => 'fas fa-box',
                 'link' => '#'
             ],
             [
-                'title' => 'Total Pelanggan',
-                'value' => Customer::count(),
-                'color' => 'danger',
-                'icon' => 'fas fa-users',
+                'title' => 'Staf di Mes',
+                'value' => $housingStats['mess'] . ' Orang',
+                'color' => 'warning',
+                'icon' => 'fas fa-home',
                 'link' => '#'
             ]
         ];
@@ -54,9 +70,12 @@ class ReportController extends Controller
             ->whereMonth('created_at', now()->month)
             ->sum('quantity') ?? 0;
             
+        // Calculate Expenses for the month
+        $monthlyExpenses = Expense::whereMonth('date', now()->month)->sum('amount') ?? 0;
+
         $monthlyStats = [
-            'revenue' => Transaction::whereMonth('created_at', now()->month)->sum('total_amount') ?? 0,
-            'expenses' => 0,
+            'revenue' => $totalCombinedRevenue,
+            'expenses' => $monthlyExpenses,
             'transactions' => Transaction::whereMonth('created_at', now()->month)->count() ?? 0,
             'products_sold' => $totalProductsSold,
             'profit' => 0
@@ -67,19 +86,27 @@ class ReportController extends Controller
         $monthlyChartData = ['labels' => [], 'revenue' => [], 'expenses' => [], 'profit' => []];
         for ($i = 5; $i >= 0; $i--) {
             $date = Carbon::now()->subMonths($i);
-            $rev = Transaction::whereMonth('created_at', $date->month)
+            
+            $revRetail = Transaction::whereMonth('created_at', $date->month)
                 ->whereYear('created_at', $date->year)
                 ->sum('total_amount') ?? 0;
+            $revWholesale = \App\Models\WholesaleOrder::whereMonth('created_at', $date->month)
+                ->whereYear('created_at', $date->year)
+                ->where('status', '!=', 'cancelled')
+                ->sum('total_amount') ?? 0;
+            $rev = $revRetail + $revWholesale;
+
             $exp = Expense::whereMonth('created_at', $date->month)
                 ->whereYear('created_at', $date->year)
                 ->sum('amount') ?? 0;
+                
             $monthlyChartData['labels'][] = $date->format('M Y');
             $monthlyChartData['revenue'][] = $rev;
             $monthlyChartData['expenses'][] = $exp;
             $monthlyChartData['profit'][] = $rev - $exp;
         }
 
-        return view('reports.index', compact('reportCards', 'recentReports', 'monthlyStats', 'monthlyChartData'));
+        return view('reports.index', compact('reportCards', 'recentReports', 'monthlyStats', 'monthlyChartData', 'housingStats'));
     }
     
     public function sales(Request $request)
