@@ -142,13 +142,14 @@
         border: none;
         display: block;
         margin: 0 auto;
-        width: 160px; /* Reduced width */
-        padding: 10px; /* Reduced padding */
-        border-radius: 8px;
+        width: 100%;
+        padding: 13px;
+        border-radius: 10px;
         font-weight: 700;
-        font-size: 0.9rem; /* Slightly smaller text */
+        font-size: 1rem;
         transition: all 0.2s;
         cursor: pointer;
+        letter-spacing: 0.02em;
     }
 
     .btn-login:hover {
@@ -165,40 +166,63 @@
         line-height: 1.5;
     }
 
-    /* Responsive */
+    /* Responsive - Tablet */
     @media (max-width: 992px) {
-        .login-page {
-            align-items: center; /* Center vertically on mobile */
-            overflow-y: hidden; /* Prevent scroll if possible */
-        }
         .login-container {
             flex-direction: column;
-            height: 100vh;
+            height: auto;
+            min-height: 100vh;
         }
         .login-branding {
-            height: 20vh; /* Shorter branding section */
+            height: auto;
+            min-height: 22vh;
             flex: none;
-            padding: 15px;
+            padding: 20px 15px;
             justify-content: center;
         }
-        .branding-title { font-size: 1.4rem; margin-bottom: 0; }
+        .branding-title { font-size: 1.6rem; margin-bottom: 4px; }
         .branding-circle-1, .branding-circle-2, .opacity-75 { display: none; }
         
         .login-form-section {
             flex: 1;
             width: 100%;
-            padding: 25px 20px; /* Tighter padding */
-            border-radius: 25px 25px 0 0;
+            padding: 32px 28px;
+            border-radius: 24px 24px 0 0;
             margin-top: -20px;
+            box-shadow: 0 -8px 30px rgba(0,0,0,0.1);
             z-index: 10;
-            justify-content: flex-start; /* Start from top to fit everything */
+            justify-content: center;
+            align-items: center;
         }
-        .form-header h2 { font-size: 1.5rem; margin-bottom: 2px; }
-        .form-header p { font-size: 0.85rem; margin-bottom: 15px; }
+        .form-wrapper { max-width: 100%; width: 100%; }
+        .form-header h2 { font-size: 1.5rem; margin-bottom: 4px; }
+        .form-header p { font-size: 0.85rem; margin-bottom: 24px; }
+        .apms-input-group { margin-bottom: 14px; }
+        .form-utility { margin-bottom: 18px; }
+        .policy-text { margin-top: 16px; font-size: 0.7rem; }
+        .btn-login { padding: 13px; }
+    }
+
+    /* Responsive - Mobile XS */
+    @media (max-width: 480px) {
+        .login-branding {
+            min-height: 20vh;
+            padding: 15px;
+        }
+        .branding-title { font-size: 1.2rem; }
+        .login-form-section {
+            padding: 28px 20px;
+            justify-content: center;
+            align-items: center;
+        }
+        .form-wrapper { max-width: 100%; width: 100%; }
+        .form-header h2 { font-size: 1.3rem; }
+        .form-header p { font-size: 0.8rem; margin-bottom: 18px; }
+        .apms-input { font-size: 0.9rem; padding: 11px 14px; padding-right: 42px; }
         .apms-input-group { margin-bottom: 10px; }
-        .form-utility { margin-bottom: 15px; }
-        .policy-text { margin-top: 12px; font-size: 0.7rem; }
-        .btn-login { padding: 12px; }
+        .form-utility { margin-bottom: 14px; font-size: 0.8rem; }
+        .btn-login { padding: 12px; font-size: 0.95rem; }
+        .policy-text { font-size: 0.68rem; margin-top: 14px; }
     }
 </style>
 

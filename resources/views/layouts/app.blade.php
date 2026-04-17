@@ -306,7 +306,7 @@
                 font-size: 0.8rem;
             }
             .main-header.navbar {
-                min-height: 38px !important;
+                min-height: 40px !important;
                 padding: 0 8px !important;
             }
 
@@ -318,24 +318,24 @@
                 padding: 0 !important;
             }
             .container-fluid {
-                padding-left: 0 !important;
-                padding-right: 0 !important;
+                padding-left: 4px !important;
+                padding-right: 4px !important;
                 padding-top: 0 !important;
             }
 
             /* Cards */
             .card {
-                margin-bottom: 2px !important;
+                margin-bottom: 4px !important;
                 border-radius: 0 !important;
                 box-shadow: none !important;
             }
             .card-apms {
-                margin-bottom: 2px !important;
+                margin-bottom: 4px !important;
                 border-radius: 0 !important;
                 box-shadow: none !important;
             }
             .card-header {
-                padding: 4px 8px !important;
+                padding: 6px 10px !important;
                 border-bottom: 1px solid rgba(0,0,0,.05) !important;
             }
             .card-header .card-title {
@@ -343,7 +343,7 @@
                 margin-bottom: 0 !important;
             }
             .card-body {
-                padding: 4px 8px !important;
+                padding: 6px 10px !important;
             }
             
             /* High Density Overrides */
@@ -352,8 +352,8 @@
                 margin-right: 0 !important;
             }
             .col-mobile-tight {
-                padding-left: 0 !important;
-                padding-right: 0 !important;
+                padding-left: 4px !important;
+                padding-right: 4px !important;
             }
             .card-mobile-flush {
                 margin: 0 !important;
@@ -367,13 +367,13 @@
 
             /* Info Boxes (stat cards) */
             .info-box {
-                min-height: 60px !important;
+                min-height: 62px !important;
                 padding: 0 !important;
                 margin-bottom: 8px !important;
             }
             .info-box-icon {
-                width: 50px !important;
-                line-height: 60px !important;
+                width: 52px !important;
+                line-height: 62px !important;
                 font-size: 1.2rem !important;
             }
             .info-box-content {
@@ -414,14 +414,11 @@
 
             /* Tables - favor horizontal scrolling on mobile */
             .table-responsive .table {
-                min-width: 600px; /* Minimum width to trigger horizontal scroll when many columns */
+                min-width: 520px;
             }
             .table th, .table td {
-                font-size: 0.8rem !important;
-                padding: 8px 10px !important;
-            }
-            .table th.text-nowrap, .table td.text-nowrap {
-                white-space: nowrap !important;
+                font-size: 0.78rem !important;
+                padding: 7px 8px !important;
             }
             .table-responsive {
                 border-radius: 8px;
@@ -434,38 +431,36 @@
                 padding: 5px 10px !important;
             }
             .btn-block {
-                padding: 8px 10px !important;
+                padding: 10px !important;
             }
 
             /* Form Controls */
             .form-control, .form-group label {
-                font-size: 0.8rem !important;
+                font-size: 0.82rem !important;
             }
             .form-group {
                 margin-bottom: 8px !important;
             }
 
-            /* Row gutters */
+            /* Row gutters - use small gutters not zero to avoid edge-to-edge look */
             .row {
                 margin-left: -4px !important;
                 margin-right: -4px !important;
-                max-width: 100% !important;
+                max-width: 100vw !important;
             }
             .row > [class*="col-"] {
                 padding-left: 4px !important;
                 padding-right: 4px !important;
-                max-width: 100%;
-                overflow: hidden;
             }
 
             /* Prevent any element from exceeding screen */
-            img, iframe, video, embed, canvas {
+            img, iframe, video, embed {
                 max-width: 100% !important;
             }
 
-            /* Charts - smaller height */
+            /* Charts */
             canvas {
-                max-height: 180px !important;
+                max-height: 200px !important;
                 width: 100% !important;
             }
 
@@ -477,7 +472,7 @@
                 margin-left: 0 !important;
             }
 
-            /* Fix sidebar overlay not blocking scroll */
+            /* Fix content wrapper overflow */
             .content-wrapper, .main-footer {
                 max-width: 100vw !important;
                 overflow-x: hidden !important;
@@ -485,7 +480,7 @@
 
             /* Sidebar brand */
             .brand-text {
-                font-size: 1.1rem !important;
+                font-size: 1rem !important;
             }
 
             /* Content header */
@@ -498,14 +493,43 @@
 
             /* Badge */
             .badge {
-                font-size: 0.6rem !important;
-                padding: 1px 4px !important;
+                font-size: 0.62rem !important;
+                padding: 2px 5px !important;
             }
 
-            /* Brand text mobile specifically */
+            /* Sidebar link brand */
             .main-sidebar .brand-link {
                 padding-top: 10px !important;
                 padding-bottom: 10px !important;
+            }
+
+            /* Fix dashboard chart container height */
+            .position-relative[style*="height: 300px"] {
+                height: 200px !important;
+            }
+        }
+
+        /* XS screens (< 480px) */
+        @media (max-width: 479.98px) {
+            .container-fluid {
+                padding-left: 2px !important;
+                padding-right: 2px !important;
+            }
+            .card-header {
+                padding: 4px 8px !important;
+            }
+            .card-body {
+                padding: 4px 8px !important;
+            }
+            .table th, .table td {
+                font-size: 0.72rem !important;
+                padding: 5px 6px !important;
+            }
+            canvas {
+                max-height: 160px !important;
+            }
+            .badge {
+                font-size: 0.55rem !important;
             }
         }
 
@@ -580,6 +604,11 @@
                     
                     <a href="{{ route('wholesale.index') }}" class="dropdown-item dropdown-footer">Lihat Semua Pesanan Grosir</a>
                 </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" id="darkModeToggle" title="Toggle Dark Mode">
+                    <i class="fas fa-moon" style="color: #5e6e82;"></i>
+                </a>
             </li>
 
             <li class="nav-item dropdown">
@@ -789,6 +818,56 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/dropzone@5.9.3/dist/min/dropzone.min.js"></script>
 
+<script>
+    // Dark Mode Logic
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleBtn = document.getElementById('darkModeToggle');
+        if (toggleBtn) {
+            const bodyTag = document.body;
+            
+            // Load preference
+            if(localStorage.getItem('apms_dark_mode') === 'true') {
+                bodyTag.classList.add('dark-mode');
+                toggleBtn.querySelector('i').classList.replace('fa-moon', 'fa-sun');
+            }
+
+            toggleBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                bodyTag.classList.toggle('dark-mode');
+                const isDark = bodyTag.classList.contains('dark-mode');
+                localStorage.setItem('apms_dark_mode', isDark);
+                
+                if(isDark) {
+                    toggleBtn.querySelector('i').classList.replace('fa-moon', 'fa-sun');
+                } else {
+                    toggleBtn.querySelector('i').classList.replace('fa-sun', 'fa-moon');
+                }
+            });
+        }
+    });
+
+    // 15-Minute Auto-Logout (Idle Timeout for Security)
+    let idleSecondsCounter = 0;
+    const idleLimit = 15 * 60; // 15 minutes
+
+    document.addEventListener('mousemove', () => { idleSecondsCounter = 0; });
+    document.addEventListener('keypress', () => { idleSecondsCounter = 0; });
+    document.addEventListener('click', () => { idleSecondsCounter = 0; });
+
+    setInterval(() => {
+        idleSecondsCounter++;
+        if (idleSecondsCounter >= idleLimit) {
+            // Use the hidden logout form in the navbar to logout safely
+            const logoutForm = document.querySelector("form[action='{{ route('logout') }}']");
+            if (logoutForm) {
+                logoutForm.submit();
+            } else {
+                window.location.href = '/login';
+            }
+        }
+    }, 1000);
+</script>
+
     <!-- AI Assistant FAB -->
     <div id="ai-assistant-fab" class="shadow-lg" title="APMS AI Copilot">
         <i class="fas fa-robot"></i>
@@ -893,6 +972,26 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.18);
             border: 1px solid rgba(0,0,0,0.06);
             transition: all 0.3s ease;
+        }
+        @media (max-width: 767.98px) {
+            #ai-assistant-fab {
+                bottom: 18px;
+                right: 16px;
+                width: 48px;
+                height: 48px;
+                font-size: 1.15rem;
+                box-shadow: 0 4px 14px rgba(44, 123, 229, 0.45);
+            }
+            #ai-chat-window {
+                bottom: 78px;
+                right: 8px;
+                left: 8px;
+                width: auto;
+                max-width: calc(100vw - 16px);
+                height: 72vh;
+                max-height: calc(100vh - 100px);
+                border-radius: 16px;
+            }
         }
         .ai-chat-header {
             background: linear-gradient(135deg, var(--primary-color), #5e9cf2);

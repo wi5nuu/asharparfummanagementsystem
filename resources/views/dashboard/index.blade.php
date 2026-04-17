@@ -4,6 +4,43 @@
 
 @push('styles')
 <style>
+    /* ---- Dashboard Mobile Specific ---- */
+    @media (max-width: 767.98px) {
+        /* Sales chart height on mobile */
+        .chart-sales-wrap {
+            height: 200px !important;
+        }
+
+        /* Stat tiles: make all 4 use half width */
+        .col-6.col-md-3 {
+            /* already using col-6, fine */
+        }
+
+        /* Remove extra right-column margin at mobile */
+        .col-12.col-lg-4 .card-apms {
+            border-radius: 8px !important;
+            margin-bottom: 8px !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+        }
+
+        /* Hero banner text truncation */
+        .card.bg-gradient-dark h3 {
+            font-size: 1.1rem !important;
+        }
+
+        /* Command strip height */
+        .row.bg-white.border.shadow-sm .col-7,
+        .row.bg-white.border.shadow-sm .col-5 {
+            height: auto !important;
+            min-height: 32px !important;
+        }
+
+        /* Distributor payment chart height */
+        #paymentChartContainer {
+            height: 120px !important;
+        }
+    }
+
     @media (max-width: 576px) {
         .info-box-mini {
             flex-direction: column;
@@ -28,6 +65,20 @@
         .info-box-mini .info-box-number {
             font-size: 0.75rem !important;
             display: block !important;
+        }
+
+        /* Hero banner on xs */
+        .card.bg-gradient-dark h3 {
+            font-size: 0.95rem !important;
+        }
+        .card.bg-gradient-dark .card-body {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+        }
+
+        /* Sales chart even smaller on xs */
+        .chart-sales-wrap {
+            height: 160px !important;
         }
     }
 </style>
@@ -170,18 +221,18 @@
     </div>
     @else
     <!-- Period Filter Only for Owner/Others -->
-    <div class="bg-white border shadow-sm mb-1 px-2 py-1 row-mobile-tight row mx-0 no-gutters">
-        <div class="col-6 d-flex align-items-center">
-            <span class="font-weight-bold text-muted smaller mr-2">PERIODE LAPORAN:</span>
+    <div class="bg-white border shadow-sm mb-1 px-2 py-1 row-mobile-tight row mx-0 no-gutters align-items-center">
+        <div class="col d-flex align-items-center">
+            <span class="font-weight-bold text-muted smaller mr-2">PERIODE:</span>
             <span class="badge badge-primary-apms px-2">{{ $periodLabel }}</span>
         </div>
-        <div class="col-6">
+        <div class="col-auto">
             <form action="{{ route('dashboard') }}" method="GET" id="ownerPeriodFilterForm" class="m-0">
-                <select name="period" class="form-control form-control-sm border-0 font-weight-bold p-0 h-auto text-right" style="font-size: 0.7rem;" onchange="document.getElementById('ownerPeriodFilterForm').submit()">
-                    <option value="today" {{ $period == 'today' ? 'selected' : '' }}>Hari Ini</option>
-                    <option value="this_week" {{ $period == 'this_week' ? 'selected' : '' }}>Minggu Ini</option>
-                    <option value="this_month" {{ $period == 'this_month' ? 'selected' : '' }}>Bulan Ini</option>
-                    <option value="this_year" {{ $period == 'this_year' ? 'selected' : '' }}>Tahun Ini</option>
+                <select name="period" class="form-control form-control-sm border border-secondary font-weight-bold text-center" style="font-size: 0.7rem; max-width: 90px; border-radius: 4px;" onchange="document.getElementById('ownerPeriodFilterForm').submit()">
+                    <option value="today"      {{ $period == 'today'      ? 'selected' : '' }}>Harian</option>
+                    <option value="this_week"  {{ $period == 'this_week'  ? 'selected' : '' }}>Mingguan</option>
+                    <option value="this_month" {{ $period == 'this_month' ? 'selected' : '' }}>Bulanan</option>
+                    <option value="this_year"  {{ $period == 'this_year'  ? 'selected' : '' }}>Tahunan</option>
                 </select>
             </form>
         </div>
@@ -197,7 +248,7 @@
     <!-- Main Content Row -->
     <div class="row row-mobile-tight m-md-0">
         <!-- Left Column -->
-        <div class="col-lg-8 col-mobile-tight">
+        <div class="col-12 col-lg-8 col-mobile-tight">
             <!-- Sales Chart Area and Side Panels -->
             <div class="row m-0 p-0">
                 <div class="col-xl-8 pr-xl-3 col-mobile-tight">
@@ -207,7 +258,7 @@
                             <h3 class="card-title font-weight-bold" style="font-size: 0.9rem;">Grafik Penjualan {{ date('Y') }}</h3>
                         </div>
                         <div class="card-body pt-0 mobile-tight-p">
-                            <div class="position-relative" style="height: 300px;">
+                            <div class="position-relative chart-sales-wrap" style="height: 280px;">
                                 <canvas id="salesChart"></canvas>
                             </div>
                         </div>
@@ -318,7 +369,7 @@
         </div>
         
         <!-- Right Column -->
-        <div class="col-lg-4">
+        <div class="col-12 col-lg-4">
             <!-- NEW: Live Personnel (Active Staff) -->
             <div class="card card-apms shadow-sm border-0 mb-3 overflow-hidden">
                 <div class="card-header bg-faint-teal py-2 px-3 border-0">
@@ -554,6 +605,8 @@ $(function() {
     var labelsRaw = JSON.parse('{!! json_encode(collect($salesData)->pluck("month")) !!}');
     var dataRaw = JSON.parse('{!! json_encode(collect($salesData)->pluck("sales")) !!}');
 
+    var salesChartCanvas = document.getElementById('salesChart').getContext('2d'); // ✅ Fixed: was undefined
+
     var salesChartData = {
         labels: labelsRaw,
         datasets: [{
@@ -676,15 +729,25 @@ $(function() {
     // Initial call after 30s, then repeat
     setInterval(refreshStats, 30000);
     
-    // Payment Method Chart
+    // Payment Method Chart — data nyata dari DB
+    var paymentRaw = {!! json_encode($paymentData) !!};
+    var paymentLabels = Object.keys(paymentRaw).map(k => k.toUpperCase());
+    var paymentValues = Object.values(paymentRaw);
+
+    // Jika tidak ada transaksi, tampilkan placeholder
+    if (paymentValues.length === 0) {
+        paymentLabels = ['Belum ada data'];
+        paymentValues = [1];
+    }
+
     var paymentChartCanvas = $('#paymentChart').get(0).getContext('2d');
     var paymentChart = new Chart(paymentChartCanvas, {
         type: 'doughnut',
         data: {
-            labels: ['Cash', 'QRIS', 'Transfer', 'Kartu'],
+            labels: paymentLabels,
             datasets: [{
-                data: [40, 30, 20, 10],
-                backgroundColor: ['#2c7be5', '#27bcfd', '#00d27a', '#748194'],
+                data: paymentValues,
+                backgroundColor: ['#2c7be5', '#27bcfd', '#00d27a', '#748194', '#e63757', '#f5803e'],
                 borderWidth: 0
             }]
         },
@@ -693,7 +756,18 @@ $(function() {
             responsive: true,
             plugins: {
                 legend: {
-                    position: 'bottom'
+                    position: 'bottom',
+                    labels: {
+                        font: { size: 10 },
+                        boxWidth: 10
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.label + ': ' + context.raw + ' transaksi';
+                        }
+                    }
                 }
             }
         }
